@@ -10,10 +10,12 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute("Bootstrap5")]
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("aspnet-DevWeb_23774_25961-1f3f9bb7-71b6-4040-98f0-ab0b9bd14361")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("DevWeb_23774_25961")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2deb9aefee0eb89336ff2f168deccff33638faae")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4b4cbc3ad3ca6af2b5b0753b8bd97e0c4418ea30")]
 [assembly: System.Reflection.AssemblyProductAttribute("DevWeb_23774_25961")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DevWeb_23774_25961")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
