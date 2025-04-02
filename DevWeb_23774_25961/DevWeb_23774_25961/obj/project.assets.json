@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\joana\\RiderProjects\\DevWeb_23774_25961\\DevWeb_23774_25961\\DevWeb_23774_25961.csproj",
+      "projectUniqueName": "C:\\Users\\joana\\OneDrive\\Documentos\\GitHub\\DevWeb_23774_25961\\DevWeb_23774_25961\\DevWeb_23774_25961\\DevWeb_23774_25961.csproj",
       "projectName": "DevWeb_23774_25961",
-      "projectPath": "C:\\Users\\joana\\RiderProjects\\DevWeb_23774_25961\\DevWeb_23774_25961\\DevWeb_23774_25961.csproj",
+      "projectPath": "C:\\Users\\joana\\OneDrive\\Documentos\\GitHub\\DevWeb_23774_25961\\DevWeb_23774_25961\\DevWeb_23774_25961\\DevWeb_23774_25961.csproj",
       "packagesPath": "C:\\Users\\joana\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\joana\\RiderProjects\\DevWeb_23774_25961\\DevWeb_23774_25961\\obj\\",
+      "outputPath": "C:\\Users\\joana\\OneDrive\\Documentos\\GitHub\\DevWeb_23774_25961\\DevWeb_23774_25961\\DevWeb_23774_25961\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\joana\\AppData\\Roaming\\NuGet\\NuGet.Config"
