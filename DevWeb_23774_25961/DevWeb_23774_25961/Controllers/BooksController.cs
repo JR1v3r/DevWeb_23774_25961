@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -55,10 +56,16 @@ namespace DevWeb_23774_25961.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        
         public async Task<IActionResult> Create([Bind("Id,Titulo,Autor,Descrição,ISBN,CapaPath,CreatedBy,CreatedOn,UpdatedBy,UpdatedOn,IsActive")] Books books)
         {
             if (ModelState.IsValid)
             {
+                books.CreatedBy = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                books.CreatedOn = DateTime.Now;
+                books.UpdatedBy = null;
+                books.UpdatedOn = null;
+                books.IsActive = true;
                 _context.Add(books);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
