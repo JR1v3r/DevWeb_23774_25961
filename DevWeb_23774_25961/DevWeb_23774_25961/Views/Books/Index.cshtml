@@ -28,7 +28,7 @@
                 @Html.DisplayNameFor(model => model.CapaPath)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Creator)
+                @Html.DisplayNameFor(model => model.CreatedBy)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.CreatedOn)
@@ -64,13 +64,13 @@
                 @Html.DisplayFor(modelItem => item.CapaPath)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Creator.Id)
+                @Html.DisplayFor(modelItem => item.CreatedBy)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.CreatedOn)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Updater.Id)
+                @Html.DisplayFor(modelItem => item.UpdatedBy)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.UpdatedOn)

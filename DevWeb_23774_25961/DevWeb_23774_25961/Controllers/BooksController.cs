@@ -56,22 +56,26 @@ namespace DevWeb_23774_25961.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        
-        public async Task<IActionResult> Create([Bind("Id,Titulo,Autor,Descrição,ISBN,CapaPath,CreatedBy,CreatedOn,UpdatedBy,UpdatedOn,IsActive")] Books books)
+        public async Task<IActionResult> Create([Bind("Id,Titulo,Autor,Descrição,ISBN,CapaPath")] Books books)
         {
             if (ModelState.IsValid)
             {
-                books.CreatedBy = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                // Get current user ID, nyan~!
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                books.CreatedBy = userId;
                 books.CreatedOn = DateTime.Now;
+
                 books.UpdatedBy = null;
                 books.UpdatedOn = null;
-                books.IsActive = true;
+
+                books.IsActive = true; 
+
                 _context.Add(books);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "Id", books.CreatedBy);
-            ViewData["UpdatedBy"] = new SelectList(_context.Users, "Id", "Id", books.UpdatedBy);
+
             return View(books);
         }
 

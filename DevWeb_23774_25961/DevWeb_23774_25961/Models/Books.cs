@@ -25,7 +25,7 @@ public class Books
     
     public string? CreatedBy { get; set; }
     [ForeignKey("CreatedBy")]
-    public IdentityUser Creator { get; set; }
+    public IdentityUser? Creator { get; set; }
     
     public DateTime? CreatedOn { get; set; }
     
