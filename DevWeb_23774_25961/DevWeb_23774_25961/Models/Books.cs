@@ -22,14 +22,12 @@ public class Books
 
     [Required]
     public string CapaPath { get; set; }
-
-    [Required]
-    public string CreatedBy { get; set; }
+    
+    public string? CreatedBy { get; set; }
     [ForeignKey("CreatedBy")]
     public IdentityUser Creator { get; set; }
     
-    [Required]
-    public DateTime CreatedOn { get; set; }
+    public DateTime? CreatedOn { get; set; }
     
     public string? UpdatedBy { get; set; }
     [ForeignKey("UpdatedBy")]
@@ -37,6 +35,6 @@ public class Books
     
     public DateTime? UpdatedOn { get; set; }
     
-    [Required]
-    public bool IsActive { get; set; }
+ 
+    public bool? IsActive { get; set; }
 }
