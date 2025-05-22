@@ -1,56 +1,41 @@
-﻿@{
+﻿@model List<DevWeb_23774_25961.Models.Trocas>
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<section class="hero">
-    <div>
-        <h1 class="hero-text">[Website intro here]</h1>
-    </div>
-</section>
-
-<section class="book-listings">
-    <!-- Book Card 1 -->
-    <div class="book-card">
+<div class="text-center">
+    <section class="hero">
         <div>
-            <img src="https://placehold.co/300x400" alt="Book Cover - The Emperor of Ocean Park" class="book-cover">
+            <h1 class="hero-text">[Website intro here]</h1>
         </div>
-        <div class="book-info">
-            <div class="user-offering">
-                <div class="user-avatar">A</div>
-                <span>User A is offering...</span>
-            </div>
-            <div class="book-title">[BOOK NAME]</div>
-            <a href="#" class="check-details">Check details...</a>
-        </div>
-    </div>
+    </section>
 
-    <!-- Book Card 2 -->
-    <div class="book-card">
+    <section class="book-listings">
         <div>
-            <img src="https://placehold.co/300x400" alt="Book Cover - Erased" class="book-cover">
-        </div>
-        <div class="book-info">
-            <div class="user-offering">
-                <div class="user-avatar">A</div>
-                <span>User A is offering...</span>
+            <h1>Books available for trade: </h1>
+            <div class="container">
+                <div class="row">
+                    @foreach (var troca in Model)
+                    {
+                        <div class="col-md-4 mb-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="row g-0">
+                                    <div class="col-4">
+                                        <img src="@troca.LivroDado?.Capa" alt="Book cover" class="img-fluid rounded-start" style="height: 100%; object-fit: cover;" />
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="card-body">
+                                            <h5 class="card-title">@troca.LivroDado?.Titulo</h5>
+                                            <p class="card-text"><strong>Author:</strong> @troca.LivroDado?.Autor</p>
+                                            <p class="card-text"><strong>Offered by:</strong> @troca.Vendedor?.UserName</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
             </div>
-            <div class="book-title">[BOOK NAME]</div>
-            <a href="#" class="check-details">Check details...</a>
         </div>
-    </div>
-
-    <!-- Book Card 3 -->
-    <div class="book-card">
-        <div>
-            <img src="https://placehold.co/300x400" alt="Book Cover - Erased" class="book-cover">
-        </div>
-        <div class="book-info">
-            <div class="user-offering">
-                <div class="user-avatar">A</div>
-                <span>User A is offering...</span>
-            </div>
-            <div class="book-title">[BOOK NAME]</div>
-            <a href="#" class="check-details">Check details...</a>
-        </div>
-    </div>
-</section>
+    </section>
+</div>

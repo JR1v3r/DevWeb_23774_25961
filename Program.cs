@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using BookTradesProject.Data;
+using DevWeb_23774_25961.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

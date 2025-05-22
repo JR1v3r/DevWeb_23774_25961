@@ -1,21 +1,31 @@
 using System.Diagnostics;
+using DevWeb_23774_25961.Data;
 using Microsoft.AspNetCore.Mvc;
-using BookTradesProject.Models;
+using DevWeb_23774_25961.Models;
+using Microsoft.EntityFrameworkCore;
 
-namespace BookTradesProject.Controllers;
+namespace DevWeb_23774_25961.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly ApplicationDbContext _context;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
     {
         _logger = logger;
+        _context = context;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View();
+        var trades = await _context.Trocas
+            .Include(t => t.LivroDado)
+            .Include(t => t.Vendedor)
+            .Where(t => t.LivroDado != null && t.Vendedor != null)
+            .ToListAsync();
+
+        return View(trades); // ⸜(｡˃ ᵕ ˂ )⸝♥ send them to the view!
     }
 
     public IActionResult Privacy()

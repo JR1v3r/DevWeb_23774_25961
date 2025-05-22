@@ -13,6 +13,15 @@
     font-weight: bold;
 }
 
-#main-container{
+#mainContainer{
     margin-top: 30px;
+}
+
+.card {
+    border-radius: 1rem;
+    overflow: hidden;
+}
+.card img {
+    border-top-left-radius: 1rem;
+    border-bottom-left-radius: 1rem;
 }

@@ -1,4 +1,4 @@
-@model BookTradesProject.Models.Trocas
+@model Trocas
 
 @{
     ViewData["Title"] = "Edit";
@@ -14,24 +14,24 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
-                <label asp-for="LivroDado" class="control-label"></label>
-                <input asp-for="LivroDado" class="form-control" />
-                <span asp-validation-for="LivroDado" class="text-danger"></span>
+                <label asp-for="IdLivroDado" class="control-label"></label>
+                <select asp-for="IdLivroDado" class="form-control" asp-items="ViewBag.IdLivroDado"></select>
+                <span asp-validation-for="IdLivroDado" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="LivroRecebido" class="control-label"></label>
-                <input asp-for="LivroRecebido" class="form-control" />
-                <span asp-validation-for="LivroRecebido" class="text-danger"></span>
+                <label asp-for="IdLivroRecebido" class="control-label"></label>
+                <select asp-for="IdLivroRecebido" class="form-control" asp-items="ViewBag.IdLivroRecebido"></select>
+                <span asp-validation-for="IdLivroRecebido" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Vendedor" class="control-label"></label>
-                <input asp-for="Vendedor" class="form-control" />
-                <span asp-validation-for="Vendedor" class="text-danger"></span>
+                <label asp-for="IdVendedor" class="control-label"></label>
+                <select asp-for="IdVendedor" class="form-control" asp-items="ViewBag.IdVendedor"></select>
+                <span asp-validation-for="IdVendedor" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Comprador" class="control-label"></label>
-                <input asp-for="Comprador" class="form-control" />
-                <span asp-validation-for="Comprador" class="text-danger"></span>
+                <label asp-for="IdComprador" class="control-label"></label>
+                <select asp-for="IdComprador" class="form-control" asp-items="ViewBag.IdComprador"></select>
+                <span asp-validation-for="IdComprador" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Estado" class="control-label"></label>

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DevWeb_23774_25961.Migrations
 {
     /// <inheritdoc />
-    public partial class initSqlServerAzure : Migration
+    public partial class AzureDBInit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -167,18 +167,18 @@ namespace DevWeb_23774_25961.Migrations
                     ISBN = table.Column<int>(type: "int", nullable: false),
                     Sinopse = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Capa = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DonoId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DonoId_FKId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Livros", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Livros_AspNetUsers_DonoId_FKId",
-                        column: x => x.DonoId_FKId,
+                        name: "FK_Livros_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -187,14 +187,10 @@ namespace DevWeb_23774_25961.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    LivroDado = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LivroDado_FKId = table.Column<int>(type: "int", nullable: true),
-                    LivroRecebido = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LivroRecebido_FKId = table.Column<int>(type: "int", nullable: true),
-                    Vendedor = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Vendedor_FKId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    Comprador = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Comprador_FKId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    IdLivroDado = table.Column<int>(type: "int", nullable: true),
+                    IdLivroRecebido = table.Column<int>(type: "int", nullable: true),
+                    IdVendedor = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    IdComprador = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Estado = table.Column<int>(type: "int", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -202,25 +198,29 @@ namespace DevWeb_23774_25961.Migrations
                 {
                     table.PrimaryKey("PK_Trocas", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Trocas_AspNetUsers_Comprador_FKId",
-                        column: x => x.Comprador_FKId,
+                        name: "FK_Trocas_AspNetUsers_IdComprador",
+                        column: x => x.IdComprador,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Trocas_AspNetUsers_Vendedor_FKId",
-                        column: x => x.Vendedor_FKId,
+                        name: "FK_Trocas_AspNetUsers_IdVendedor",
+                        column: x => x.IdVendedor,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Trocas_Livros_LivroDado_FKId",
-                        column: x => x.LivroDado_FKId,
+                        name: "FK_Trocas_Livros_IdLivroDado",
+                        column: x => x.IdLivroDado,
                         principalTable: "Livros",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Trocas_Livros_LivroRecebido_FKId",
-                        column: x => x.LivroRecebido_FKId,
+                        name: "FK_Trocas_Livros_IdLivroRecebido",
+                        column: x => x.IdLivroRecebido,
                         principalTable: "Livros",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -263,29 +263,29 @@ namespace DevWeb_23774_25961.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Livros_DonoId_FKId",
+                name: "IX_Livros_UserId",
                 table: "Livros",
-                column: "DonoId_FKId");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Trocas_Comprador_FKId",
+                name: "IX_Trocas_IdComprador",
                 table: "Trocas",
-                column: "Comprador_FKId");
+                column: "IdComprador");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Trocas_LivroDado_FKId",
+                name: "IX_Trocas_IdLivroDado",
                 table: "Trocas",
-                column: "LivroDado_FKId");
+                column: "IdLivroDado");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Trocas_LivroRecebido_FKId",
+                name: "IX_Trocas_IdLivroRecebido",
                 table: "Trocas",
-                column: "LivroRecebido_FKId");
+                column: "IdLivroRecebido");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Trocas_Vendedor_FKId",
+                name: "IX_Trocas_IdVendedor",
                 table: "Trocas",
-                column: "Vendedor_FKId");
+                column: "IdVendedor");
         }
 
         /// <inheritdoc />

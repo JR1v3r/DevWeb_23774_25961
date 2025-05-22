@@ -1,4 +1,4 @@
-namespace BookTradesProject.Models;
+namespace DevWeb_23774_25961.Models;
 
 public class ErrorViewModel
 {

@@ -1,4 +1,4 @@
-@model IEnumerable<BookTradesProject.Models.Trocas>
+@model IEnumerable<Trocas>
 
 @{
     ViewData["Title"] = "Index";
@@ -37,16 +37,16 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.LivroDado)
+                @Html.DisplayFor(modelItem => item.LivroDado.Autor)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.LivroRecebido)
+                @Html.DisplayFor(modelItem => item.LivroRecebido.Autor)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Vendedor)
+                @Html.DisplayFor(modelItem => item.Vendedor.Id)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Comprador)
+                @Html.DisplayFor(modelItem => item.Comprador.Id)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Estado)

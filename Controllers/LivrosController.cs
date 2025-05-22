@@ -1,27 +1,28 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using BookTradesProject.Data;
-using BookTradesProject.Models;
-using Microsoft.AspNetCore.Authorization;
+using DevWeb_23774_25961.Data;
+using DevWeb_23774_25961.Models;
+using Microsoft.AspNetCore.Identity;
 
-
-namespace BookTradesProject.Controllers
+namespace DevWeb_23774_25961.Controllers
 {
-    [Authorize]
     public class LivrosController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public LivrosController(ApplicationDbContext context)
+        private readonly UserManager<IdentityUser> _userManager;
+        
+        public LivrosController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Livros
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Livros.ToListAsync());
+            var applicationDbContext = _context.Livros.Include(l => l.User);
+            return View(await applicationDbContext.ToListAsync());
         }
 
         // GET: Livros/Details/5
@@ -33,6 +34,7 @@ namespace BookTradesProject.Controllers
             }
 
             var livros = await _context.Livros
+                .Include(l => l.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (livros == null)
             {
@@ -45,6 +47,7 @@ namespace BookTradesProject.Controllers
         // GET: Livros/Create
         public IActionResult Create()
         {
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
             return View();
         }
 
@@ -55,20 +58,21 @@ namespace BookTradesProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Titulo,Autor,ISBN,Sinopse,Capa")] Livros livros)
         {
-            //obtem o id do utilizador a efetuar a criação
-            var donoId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            livros.DonoId = donoId;
-                
-            //"ativa" o livro a ser criado
-            livros.IsActive = true;
-            
-            if (ModelState.IsValid)
+            if (ModelState.IsValid)  // <-- This is the important verification, nya!
             {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return RedirectToPage("/Account/Login", new { area = "Identity" });
+                }
+
+                livros.UserId = user.Id;  // Set UserId and IsActive automatically (not from form!)
+                livros.IsActive = true;
+                
                 _context.Add(livros);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            
             return View(livros);
         }
 
@@ -85,6 +89,7 @@ namespace BookTradesProject.Controllers
             {
                 return NotFound();
             }
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", livros.UserId);
             return View(livros);
         }
 
@@ -93,7 +98,7 @@ namespace BookTradesProject.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,Autor,ISBN,Sinopse,Capa")] Livros livros)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,Autor,ISBN,Sinopse,Capa,UserId,IsActive")] Livros livros)
         {
             if (id != livros.Id)
             {
@@ -120,6 +125,7 @@ namespace BookTradesProject.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", livros.UserId);
             return View(livros);
         }
 
@@ -132,6 +138,7 @@ namespace BookTradesProject.Controllers
             }
 
             var livros = await _context.Livros
+                .Include(l => l.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (livros == null)
             {
