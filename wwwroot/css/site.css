@@ -20,3 +20,21 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+section {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+.index-card-body{
+  text-align: left;
+  height: 100%;
+}
+
+.index-card-title{
+  padding-bottom: 15px;
+}
+
+.index-h1{
+  padding-bottom: 15px;
+}
