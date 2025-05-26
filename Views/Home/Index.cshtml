@@ -4,15 +4,21 @@
 }
 
 <div class="text-center">
-    <section class="hero">
-        <div>
-            <h1 class="hero-text">[Website intro here]</h1>
+    <section>
+        <div id="carouselExampleAutoplaying" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img src="promo1.png" class="d-block w-100" alt="...">
+                </div>
+                <div class="carousel-item">
+                    <img src="promo2.png" class="d-block w-100" alt="...">
+                </div>
+            </div>
         </div>
     </section>
-
     <section class="book-listings">
         <div>
-            <h1>Livros disponíveis para troca: </h1>
+            <h1 class="index-h1">Livros disponíveis para troca: </h1>
             <div class="container">
                 <div class="row">
                     @foreach (var troca in Model)
@@ -21,11 +27,11 @@
                             <div class="card shadow-sm h-100">
                                 <div class="row g-0">
                                     <div class="col-4">
-                                        <img src="@troca.LivroDado?.Capa" alt="Book cover" class="img-fluid rounded-start" style="height: 100%; object-fit: cover;" />
+                                        <img src="@troca.LivroDado?.Capa" alt="Book cover" class="img-fluid rounded-start" style="height: 100%; object-fit: cover;"/>
                                     </div>
                                     <div class="col-8">
-                                        <div class="card-body">
-                                            <h5 class="card-title">@troca.LivroDado?.Titulo</h5>
+                                        <div class="card-body index-card-body">
+                                            <h5 class="card-title index-card-title">@troca.LivroDado?.Titulo</h5>
                                             <p class="card-text"><strong>Author:</strong> @troca.LivroDado?.Autor</p>
                                             <p class="card-text"><strong>Offered by:</strong> @troca.Vendedor?.UserName</p>
                                         </div>
