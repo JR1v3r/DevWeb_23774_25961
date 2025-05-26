@@ -1,0 +1,30 @@
+@model IEnumerable<DevWeb_23774_25961.Models.Livros>
+
+@{
+    Layout = "_Layout";
+}
+
+<h1 class="mb-4">Os meus livros</h1>
+
+@if (!Model.Any())
+{
+    <p>You haven't added any books yet!</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var livro in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="@livro.Capa" class="card-img-top" alt="Book cover" />
+                    <div class="card-body">
+                        <h5 class="card-title">@livro.Titulo</h5>
+                        <p class="card-text">Author: @livro.Autor</p>
+                        <a asp-action="Details" asp-route-id="@livro.Id" class="btn btn-primary">More info...</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

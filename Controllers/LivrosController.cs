@@ -24,7 +24,23 @@ namespace DevWeb_23774_25961.Controllers
             var applicationDbContext = _context.Livros.Include(l => l.User);
             return View(await applicationDbContext.ToListAsync());
         }
+        
+        // GET: Livros/MyBooks
+        public async Task<IActionResult> MyBooks()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
 
+            var meusLivros = await _context.Livros
+                .Where(l => l.UserId == user.Id)
+                .ToListAsync();
+
+            return View(meusLivros);
+        }
+        
         // GET: Livros/Details/5
         public async Task<IActionResult> Details(int? id)
         {
