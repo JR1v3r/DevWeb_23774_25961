@@ -24,7 +24,23 @@ namespace DevWeb_23774_25961.Controllers
             var applicationDbContext = _context.Trocas.Include(t => t.Comprador).Include(t => t.LivroDado).Include(t => t.LivroRecebido).Include(t => t.Vendedor);
             return View(await applicationDbContext.ToListAsync());
         }
+        // GET: Livros/MyTrades
+        public async Task<IActionResult> MyTrades()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
 
+            var minhasTrocas = await _context.Trocas
+                .Include(t => t.LivroDado)
+                .Include(t => t.Vendedor)
+                .Where(t => t.IdVendedor == user.Id)
+                .ToListAsync();
+
+            return View(minhasTrocas);
+        }
         // GET: Trocas/Details/5
         public async Task<IActionResult> Details(int? id)
         {

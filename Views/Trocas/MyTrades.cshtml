@@ -1,0 +1,36 @@
+@model IEnumerable<DevWeb_23774_25961.Models.Trocas>
+
+@{
+    Layout = "_Layout";
+}
+
+<h1 class="mb-4">As minhas trocas</h1>
+
+@if (!Model.Any())
+{
+    <p>You haven't added any books yet!</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var troca in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="row g-0">
+                        <div class="col-4">
+                            <img src="@troca.LivroDado?.Capa" alt="Book cover" class="img-fluid rounded-start" style="height: 100%; object-fit: cover;" />
+                        </div>
+                        <div class="col-8">
+                            <div class="card-body">
+                                <h5 class="card-title">@troca.LivroDado?.Titulo</h5>
+                                <p class="card-text"><strong>Author:</strong> @troca.LivroDado?.Autor</p>
+                                <p class="card-text"><strong>Offered by:</strong> @troca.Vendedor?.UserName</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
