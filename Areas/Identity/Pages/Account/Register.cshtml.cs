@@ -163,7 +163,7 @@ namespace DevWeb_23774_25961.Areas.Identity.Pages.Account
             catch
             {
                 throw new InvalidOperationException($"Não é possível criar uma instância de '{nameof(IdentityUser)}'. " +
-                    $"Certifique-se quet '{nameof(IdentityUser)}' não é uma classe abstrata e tem um construtor sem parâmetros, ou alternativamente " +
+                    $"Certifique-se que '{nameof(IdentityUser)}' não é uma classe abstrata e tem um construtor sem parâmetros, ou alternativamente " +
                     $"substitui a página de registo em /Areas/Identity/Pages/Account/Register.cshtml");
             }
         }

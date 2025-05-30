@@ -27,7 +27,7 @@ namespace DevWeb_23774_25961.Areas.Identity.Pages.Account.Manage
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                return NotFound($"Não é possível carregar o utilizador com ID '{_userManager.GetUserId(User)}'.");
             }
 
             return Page();
