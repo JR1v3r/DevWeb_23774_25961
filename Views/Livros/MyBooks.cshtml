@@ -8,7 +8,7 @@
 
 @if (!Model.Any())
 {
-    <p>You haven't added any books yet!</p>
+    <p>Você ainda não adicionou nenhum livro!</p>
 }
 else
 {
@@ -20,8 +20,8 @@ else
                     <img src="@livro.Capa" class="card-img-top" alt="Book cover" />
                     <div class="card-body">
                         <h5 class="card-title">@livro.Titulo</h5>
-                        <p class="card-text">Author: @livro.Autor</p>
-                        <a asp-action="Details" asp-route-id="@livro.Id" class="btn btn-primary">More info...</a>
+                        <p class="card-text">Autor: @livro.Autor</p>
+                        <a asp-action="Details" asp-route-id="@livro.Id" class="btn btn-primary">Mais informação...</a>
                     </div>
                 </div>
             </div>
