@@ -12,6 +12,7 @@ namespace DevWeb_23774_25961.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
         
+        
         public LivrosController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
@@ -38,8 +39,13 @@ namespace DevWeb_23774_25961.Controllers
                 .Where(l => l.UserId == user.Id)
                 .ToListAsync();
 
-            return View(meusLivros);
+            var minhasTrocas = await _context.Trocas
+                .Where(t => t.IdVendedor == user.Id && t.Estado == Trocas.EstadoTroca.Pendente)
+                .ToListAsync();
+
+            return View(((IEnumerable<Livros>)meusLivros, (IEnumerable<Trocas>)minhasTrocas));
         }
+
         
         // GET: Livros/Details/5
         public async Task<IActionResult> Details(int? id)

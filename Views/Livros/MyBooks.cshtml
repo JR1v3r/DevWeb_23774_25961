@@ -1,27 +1,39 @@
-@model IEnumerable<DevWeb_23774_25961.Models.Livros>
-
-@{
-    Layout = "_Layout";
-}
+@model (IEnumerable<DevWeb_23774_25961.Models.Livros> Livros, IEnumerable<DevWeb_23774_25961.Models.Trocas> Trocas)
 
 <h1 class="mb-4">Os meus livros</h1>
 
-@if (!Model.Any())
+@if (!Model.Livros.Any())
 {
-    <p>You haven't added any books yet!</p>
+    <p>Ainda não existem livros na sua coleção.</p>
 }
 else
 {
     <div class="row">
-        @foreach (var livro in Model)
+        @foreach (var livro in Model.Livros)
         {
+            var troca = Model.Trocas.FirstOrDefault(t => t.IdLivroDado == livro.Id);
+            bool emTroca = troca != null;
+
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
                     <img src="@livro.Capa" class="card-img-top" alt="Book cover" />
                     <div class="card-body">
                         <h5 class="card-title">@livro.Titulo</h5>
                         <p class="card-text">Author: @livro.Autor</p>
-                        <a asp-action="Details" asp-route-id="@livro.Id" class="btn btn-primary">More info...</a>
+                        <a asp-action="Details" asp-route-id="@livro.Id" class="btn btn-primary">Detalhes</a>
+
+                        @if (!emTroca)
+                        {
+                            <form asp-controller="Trocas" asp-action="Create" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="IdLivroDado" value="@livro.Id" />
+                                <button type="submit" class="btn btn-success">Por à troca</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-controller="Trocas" asp-action="Delete" asp-route-id="@troca.Id" class="btn btn-danger">Retirar de troca</a>
+                        }
                     </div>
                 </div>
             </div>

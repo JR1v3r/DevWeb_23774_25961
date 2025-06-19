@@ -83,7 +83,7 @@ namespace DevWeb_23774_25961.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return RedirectToPage("/Account/Login", new { area = "Identity" }); // uwu
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
             }
 
             // Set remaining properties
