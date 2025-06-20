@@ -23,9 +23,27 @@ else
                         </div>
                         <div class="col-8">
                             <div class="card-body">
-                                <h5 class="card-title">@troca.LivroDado?.Titulo</h5>
-                                <p class="card-text"><strong>Author:</strong> @troca.LivroDado?.Autor</p>
-                                <p class="card-text"><strong>Offered by:</strong> @troca.Vendedor?.UserName</p>
+                                <p class="card-text"><strong>Vendedor:</strong> @troca.Vendedor?.UserName</p>
+                                <p class="card-text"><strong>Oferece:</strong> @troca.LivroDado?.Titulo</p>
+                                <p class="card-text"><strong>Cliente:</strong> @troca.Comprador?.UserName</p>
+                                <p class="card-text"><strong>Propõe:</strong> @troca.LivroRecebido?.Titulo</p>
+                                <p class="card-text"><strong>Estado da troca:</strong> @troca.Estado</p>
+                                @if (troca.IdVendedor == User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value
+                                     && troca.IdComprador != null
+                                     && troca.Estado == DevWeb_23774_25961.Models.Trocas.EstadoTroca.Pendente)
+                                {
+                                    <form asp-controller="Trocas" asp-action="Aceitar" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@troca.Id" />
+                                        <button type="submit" class="btn btn-success btn-sm">Aceitar</button>
+                                    </form>
+
+                                    <form asp-controller="Trocas" asp-action="Recusar" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@troca.Id" />
+                                        <button type="submit" class="btn btn-danger btn-sm">Recusar</button>
+                                    </form>
+                                }
                             </div>
                         </div>
                     </div>

@@ -36,7 +36,9 @@ namespace DevWeb_23774_25961.Controllers
             var minhasTrocas = await _context.Trocas
                 .Include(t => t.LivroDado)
                 .Include(t => t.Vendedor)
-                .Where(t => t.IdVendedor == user.Id)
+                .Include(t => t.Comprador)
+                .Include(t => t.LivroRecebido)
+                .Where(t => t.IdVendedor == user.Id || t.IdComprador == user.Id)
                 .ToListAsync();
 
             return View(minhasTrocas);
@@ -88,7 +90,7 @@ namespace DevWeb_23774_25961.Controllers
 
             // Set remaining properties
             trocas.IdVendedor = user.Id;
-            trocas.Estado = Trocas.EstadoTroca.Pendente;
+            trocas.Estado = Trocas.EstadoTroca.Criada;
             trocas.Timestamp = DateTime.Now;
 
             // Optional fields will stay null: IdComprador & IdLivroRecebido
@@ -165,6 +167,88 @@ namespace DevWeb_23774_25961.Controllers
             return View(trocas);
         }
 
+        // GET: Trocas/TradeProposal/5
+        public async Task<IActionResult> TradeProposal(int id)
+        {
+            var troca = await _context.Trocas
+                .Include(t => t.LivroDado)
+                .Include(t => t.Vendedor)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (troca == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
+
+            // Get the current user's books that are NOT in a pending trade
+            var livrosEmTroca = await _context.Trocas
+                .Where(t => t.IdComprador == user.Id || t.IdVendedor == user.Id)
+                .Where(t => t.Estado == Trocas.EstadoTroca.Pendente)
+                .Select(t => t.IdLivroDado)
+                .ToListAsync();
+
+            var meusLivrosDisponiveis = await _context.Livros
+                .Where(l => l.UserId == user.Id && !livrosEmTroca.Contains(l.Id))
+                .ToListAsync();
+
+            ViewBag.LivrosDisponiveis = new SelectList(meusLivrosDisponiveis, "Id", "Titulo");
+            return View(troca);
+        }
+
+        // POST: Trocas/TradeProposal/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TradeProposal(int id, [Bind("IdLivroRecebido")] Trocas updatedTrade)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
+
+            var troca = await _context.Trocas.FindAsync(id);
+            if (troca == null)
+            {
+                return NotFound();
+            }
+
+            // Update the existing trade with the proposal
+            troca.IdLivroRecebido = updatedTrade.IdLivroRecebido;
+            troca.IdComprador = user.Id;
+            troca.Estado = Trocas.EstadoTroca.Pendente;
+            troca.Timestamp = DateTime.Now;
+
+            if (ModelState.IsValid)
+            {
+                _context.Update(troca);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+
+            // If there's a validation issue, re-render the view
+            var livrosEmTroca = await _context.Trocas
+                .Where(t => t.IdComprador == user.Id || t.IdVendedor == user.Id)
+                .Where(t => t.Estado == Trocas.EstadoTroca.Pendente)
+                .Select(t => t.IdLivroDado)
+                .ToListAsync();
+
+            var meusLivrosDisponiveis = await _context.Livros
+                .Where(l => l.UserId == user.Id && !livrosEmTroca.Contains(l.Id))
+                .ToListAsync();
+
+            ViewBag.LivrosDisponiveis = new SelectList(meusLivrosDisponiveis, "Id", "Titulo", updatedTrade.IdLivroRecebido);
+            return View(troca);
+        }
+
+        
         // GET: Trocas/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -188,20 +272,108 @@ namespace DevWeb_23774_25961.Controllers
         }
 
         // POST: Trocas/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var trocas = await _context.Trocas.FindAsync(id);
-            if (trocas != null)
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+
+            var troca = await _context.Trocas.FindAsync(id);
+            if (troca == null)
+                return NotFound();
+
+            bool isVendedor = troca.IdVendedor == user.Id;
+            bool isComprador = troca.IdComprador == user.Id;
+
+            // 🍌 If you're the one who created the trade, you can delete it completely
+            if (isVendedor)
             {
-                _context.Trocas.Remove(trocas);
+                _context.Trocas.Remove(troca);
+            }
+            // 🍡 If you're the one who proposed a trade, nullify your proposal and revert status
+            else if (isComprador)
+            {
+                troca.IdLivroRecebido = null;
+                troca.IdComprador = null;
+                troca.Estado = Trocas.EstadoTroca.Criada;
+
+                _context.Trocas.Update(troca);
+            }
+            else
+            {
+                return Forbid(); // you can't touch trades you're not part of >:c
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("MyBooks", "Livros");
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Aceitar(int id)
+        {
+            var troca = await _context.Trocas
+                .Include(t => t.LivroDado)
+                .Include(t => t.LivroRecebido)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            var user = await _userManager.GetUserAsync(User);
+            if (troca == null || troca.IdVendedor != user.Id)
+                return Forbid();
+
+            if (troca.Estado != Trocas.EstadoTroca.Pendente)
+                return BadRequest();
+
+            // 👯 Swap ownerships!
+            var livroDado = troca.LivroDado;
+            var livroRecebido = troca.LivroRecebido;
+
+            if (livroDado != null && livroRecebido != null)
+            {
+                var compradorId = troca.IdComprador;
+
+                // swap ownership
+                var tempOwner = livroDado.UserId;
+                livroDado.UserId = compradorId;
+                livroRecebido.UserId = user.Id;
+
+                troca.Estado = Trocas.EstadoTroca.Aceite;
+
+                _context.Update(livroDado);
+                _context.Update(livroRecebido);
+                _context.Update(troca);
+
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("MyTrades");
         }
 
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Recusar(int id)
+        {
+            var troca = await _context.Trocas.FindAsync(id);
+            var user = await _userManager.GetUserAsync(User);
+
+            if (troca == null || troca.IdVendedor != user.Id)
+                return Forbid();
+
+            if (troca.Estado != Trocas.EstadoTroca.Pendente)
+                return BadRequest();
+
+            troca.Estado = Trocas.EstadoTroca.Recusada;
+
+            _context.Update(troca);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("MyTrades");
+        }
+
+        
         private bool TrocasExists(int id)
         {
             return _context.Trocas.Any(e => e.Id == id);

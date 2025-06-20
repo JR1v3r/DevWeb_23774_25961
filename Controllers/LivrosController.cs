@@ -26,7 +26,7 @@ namespace DevWeb_23774_25961.Controllers
             return View(await applicationDbContext.ToListAsync());
         }
         
-        // GET: Livros/MyBooks
+        // GET: MyBooks
         public async Task<IActionResult> MyBooks()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -39,12 +39,18 @@ namespace DevWeb_23774_25961.Controllers
                 .Where(l => l.UserId == user.Id)
                 .ToListAsync();
 
-            var minhasTrocas = await _context.Trocas
-                .Where(t => t.IdVendedor == user.Id && t.Estado == Trocas.EstadoTroca.Pendente)
+            var trocasAtivas = await _context.Trocas
+                .Where(t => t.Estado == Trocas.EstadoTroca.Criada || t.Estado == Trocas.EstadoTroca.Pendente)
                 .ToListAsync();
 
-            return View(((IEnumerable<Livros>)meusLivros, (IEnumerable<Trocas>)minhasTrocas));
+            var model = (
+                Livros: meusLivros.AsEnumerable(),
+                Trocas: trocasAtivas.AsEnumerable()
+            );
+            return View(model);
+
         }
+
 
         
         // GET: Livros/Details/5

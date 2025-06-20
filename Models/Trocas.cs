@@ -29,12 +29,13 @@ public class Trocas
     public IdentityUser? Comprador { get; set; }
 
     [Required]
-    public EstadoTroca Estado { get; set; } = EstadoTroca.Pendente;
+    public EstadoTroca Estado { get; set; } = EstadoTroca.Criada;
     
     public DateTime? Timestamp { get; set; }
 
     public enum EstadoTroca
     {
+        Criada,
         Pendente,
         Aceite,
         Recusada,

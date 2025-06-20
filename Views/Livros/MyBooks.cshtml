@@ -2,6 +2,10 @@
 
 <h1 class="mb-4">Os meus livros</h1>
 
+<p>
+    <a asp-action="Create">Adicionar livro</a>
+</p>
+
 @if (!Model.Livros.Any())
 {
     <p>Ainda não existem livros na sua coleção.</p>
@@ -11,15 +15,19 @@ else
     <div class="row">
         @foreach (var livro in Model.Livros)
         {
-            var troca = Model.Trocas.FirstOrDefault(t => t.IdLivroDado == livro.Id);
+            // 🔍 Check if this book is involved in a trade
+            var troca = Model.Trocas.FirstOrDefault(t =>
+                t.IdLivroDado == livro.Id || t.IdLivroRecebido == livro.Id);
+
             bool emTroca = troca != null;
 
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
-                    <img src="@livro.Capa" class="card-img-top" alt="Book cover" />
+                    <img src="@livro.Capa" class="card-img-top" alt="Capa do livro" />
                     <div class="card-body">
                         <h5 class="card-title">@livro.Titulo</h5>
-                        <p class="card-text">Author: @livro.Autor</p>
+                        <p class="card-text">Autor: @livro.Autor</p>
+
                         <a asp-action="Details" asp-route-id="@livro.Id" class="btn btn-primary">Detalhes</a>
 
                         @if (!emTroca)
@@ -32,7 +40,10 @@ else
                         }
                         else
                         {
-                            <a asp-controller="Trocas" asp-action="Delete" asp-route-id="@troca.Id" class="btn btn-danger">Retirar de troca</a>
+                            <form asp-controller="Trocas" asp-action="Delete" asp-route-id="@troca.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger">Retirar de troca</button>
+                            </form>
                         }
                     </div>
                 </div>
