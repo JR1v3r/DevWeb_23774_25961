@@ -199,7 +199,7 @@ namespace DevWeb_23774_25961.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("MyBooks", "Livros");
         }
 
         private bool TrocasExists(int id)
