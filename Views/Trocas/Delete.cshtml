@@ -4,54 +4,54 @@
     ViewData["Title"] = "Delete";
 }
 
-<h1>Delete</h1>
+<h1>Apagar</h1>
 
-<h3>Are you sure you want to delete this?</h3>
+<h3>Tem a certeza de que pretende apagar esta troca?</h3>
 <div>
-    <h4>Trocas</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.LivroDado)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.LivroDado.Autor)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.LivroRecebido)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.LivroRecebido.Autor)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Vendedor)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Vendedor.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Comprador)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Comprador.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Estado)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Estado)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Timestamp)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Timestamp)
-        </dd>
+        <dl class="col-md-8">
+            <dl class="row">
+                <dt class="col-sm-3">
+                    Titulo:
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.LivroDado.Titulo)
+                </dd>
+                <dt class="col-sm-3">
+                    Autor:
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.LivroDado.Autor)
+                </dd>
+                <dt class="col-sm-3">
+                    Descrição:
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.LivroDado.Sinopse)
+                </dd>
+                <dt class="col-sm-3">
+                    Estado:
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.Estado)
+                </dd>
+                <dt class="col-sm-3">
+                    Data da criação da troca:
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.Timestamp)
+                </dd>
+            </dl>
+        </dl>
+        <div class="col-md-4">
+            <img src="@Model.LivroDado.Capa" class="img-fluid" alt="Book cover" />
+        </div>
     </dl>
-    
+
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        <input type="submit" value="Apagar" class="btn btn-danger" />
+        <a asp-action="MyBooks" asp-controller="Livros" class="btn btn-primary" >Voltar à lista</a>
     </form>
 </div>
