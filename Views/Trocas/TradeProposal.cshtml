@@ -23,7 +23,7 @@
     <div class="col-md-6">
         <h5>Escolha um livro da sua coleção para oferecer:</h5>
 
-        <form method="post" asp-action="TradeProposal">
+        <form method="post" asp-action="TradeProposal" >
             @Html.AntiForgeryToken()
             <input type="hidden" name="Id" value="@Model.Id" />
 
@@ -33,8 +33,8 @@
                     <option disabled selected>-- Escolha um livro --</option>
                 </select>
             </div>
-
-            <button type="submit" class="btn btn-primary">Enviar proposta</button>
+            <a asp-action="Index" asp-controller="Home" class="btn btn-primary">Enviar proposta</a>
+            
         </form>
     </div>
 </div>
