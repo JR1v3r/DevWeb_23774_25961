@@ -99,7 +99,7 @@ namespace DevWeb_23774_25961.Controllers
                 
                 _context.Add(livros);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("MyBooks");
             }
             return View(livros);
         }
@@ -151,7 +151,7 @@ namespace DevWeb_23774_25961.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("MyBooks");
             }
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", livros.UserId);
             return View(livros);
@@ -188,7 +188,7 @@ namespace DevWeb_23774_25961.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("MyBooks");
         }
 
         private bool LivrosExists(int id)

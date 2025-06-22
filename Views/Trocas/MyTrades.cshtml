@@ -16,13 +16,13 @@ else
         @foreach (var troca in Model)
         {
             <div class="col-md-4 mb-4">
-                <div class="card shadow-sm h-100">
+                <div class="card shadow-sm">
                     <div class="row g-0">
                         <div class="col-4">
-                            <img src="@troca.LivroDado?.Capa" alt="Book cover" class="img-fluid rounded-start" style="height: 100%; object-fit: cover;" />
+                            <img src="@troca.LivroDado?.Capa" alt="Book cover" class="img-fluid rounded-start" style="height: 250px; width: 100%; object-fit: cover;" />
                         </div>
                         <div class="col-8">
-                            <div class="card-body">
+                            <div class="card-body" style="height: 250px; overflow-y: auto;">
                                 <p class="card-text"><strong>Vendedor:</strong> @troca.Vendedor?.UserName</p>
                                 <p class="card-text"><strong>Oferece:</strong> @troca.LivroDado?.Titulo</p>
                                 <p class="card-text"><strong>Cliente:</strong> @troca.Comprador?.UserName</p>
