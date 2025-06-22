@@ -1,7 +1,7 @@
 @model IEnumerable<DevWeb_23774_25961.Models.Trocas>
 
 @{
-    Layout = "_Layout";
+    ViewData["Title"] = "As minhas trocas";
 }
 
 <h1 class="mb-4">As minhas trocas</h1>
@@ -12,43 +12,36 @@
 }
 else
 {
-    <div class="row">
-        @foreach (var troca in Model)
-        {
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
-                    <div class="row g-0">
-                        <div class="col-4">
-                            <img src="@troca.LivroDado?.Capa" alt="Book cover" class="img-fluid rounded-start" style="height: 250px; width: 100%; object-fit: cover;" />
-                        </div>
-                        <div class="col-8">
-                            <div class="card-body" style="height: 250px; overflow-y: auto;">
-                                <p class="card-text"><strong>Vendedor:</strong> @troca.Vendedor?.UserName</p>
-                                <p class="card-text"><strong>Oferece:</strong> @troca.LivroDado?.Titulo</p>
-                                <p class="card-text"><strong>Cliente:</strong> @troca.Comprador?.UserName</p>
-                                <p class="card-text"><strong>Propõe:</strong> @troca.LivroRecebido?.Titulo</p>
-                                <p class="card-text"><strong>Estado da troca:</strong> @troca.Estado</p>
-                                @if (troca.IdVendedor == User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value
-                                     && troca.IdComprador != null
-                                     && troca.Estado == DevWeb_23774_25961.Models.Trocas.EstadoTroca.Pendente)
-                                {
-                                    <form asp-controller="Trocas" asp-action="Aceitar" method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="id" value="@troca.Id" />
-                                        <button type="submit" class="btn btn-success btn-sm">Aceitar</button>
-                                    </form>
-
-                                    <form asp-controller="Trocas" asp-action="Recusar" method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="id" value="@troca.Id" />
-                                        <button type="submit" class="btn btn-danger btn-sm">Recusar</button>
-                                    </form>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle">
+            <thead class="table-light">
+            <tr>
+                <th style="width: 100px;">Capa</th>
+                <th>Título</th>
+                <th>Estado</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var troca in Model)
+            {
+                <tr style="cursor: pointer;" onclick="location.href='@Url.Action("Details", "Trocas", new { id = troca.Id })'">
+                    <td>
+                        <img src="@troca.LivroDado?.Capa" alt="Capa" class="img-fluid rounded" style="height: 80px; object-fit: cover;" />
+                    </td>
+                    <td>@troca.LivroDado?.Titulo</td>
+                    <td>
+                        @if (@troca.Estado == Trocas.EstadoTroca.Pendente)
+                        {
+                            <text>Proposta recebida!</text>
+                        }
+                        else
+                        {
+                            @troca.Estado
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
     </div>
 }

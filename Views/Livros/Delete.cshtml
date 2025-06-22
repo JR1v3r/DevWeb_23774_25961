@@ -55,9 +55,9 @@
         </dd>
     </dl>
     
-    <form asp-action="Delete">
+    <form asp-action="Delete" style="margin-top: 10px;">
         <input type="hidden" asp-for="Id" />
+        <a onclick="window.history.back()" class="btn btn-outline-primary">Voltar</a>
         <input type="submit" value="Delete" class="btn btn-danger" />
-        <a asp-action="MyBooks" asp-controller="Livros" class="btn btn-primary">Voltar para a lista</a>
     </form>
 </div>

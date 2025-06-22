@@ -1,55 +1,28 @@
 @model DevWeb_23774_25961.Models.Livros
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalhes do Livro";
 }
 
-<h1>Detalhes</h1>
+<h1 class="mb-4">Detalhes do livro</h1>
 
-<div>
-    <h4>Livros</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Titulo)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Titulo)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Autor)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Autor)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ISBN)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ISBN)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Sinopse)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Sinopse)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Capa)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Capa)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsActive)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsActive)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-success">Edit</a>
-    <a asp-action="Delete" asp-route-id="@Model?.Id" class="btn btn-danger">Eliminar Livro</a>
-    <a asp-action="MyBooks" asp-controller="Livros" class="btn btn-primary">Voltar para a lista</a>
+<div class="container" style="margin-top: 50px;">
+    
+    <div class="row mb-4">
+        <div class="col-md-4 text-center">
+            <img src="@Model.Capa" alt="Capa do livro" class="img-fluid rounded shadow-sm" style="max-height: 300px; object-fit: contain;" />
+        </div>
+        <div class="col-md-8">
+            <h2 class="fw-bold">@Model.Titulo</h2>
+            <p><strong>Autor:</strong> @Model.Autor</p>
+            <p><strong>ISBN:</strong> @Model.ISBN</p>
+            <p><strong>Sinopse:</strong><br />@Model.Sinopse</p>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end">
+        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-success me-2">Editar</a>
+        <a asp-action="Delete" asp-route-id="@Model?.Id" class="btn btn-danger me-2">Eliminar</a>
+        <a onclick="window.history.back()" class="btn btn-outline-primary">Voltar</a>
+    </div>
 </div>
