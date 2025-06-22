@@ -19,9 +19,8 @@ public class Livros
 
     [Required]
     public string Sinopse { get; set; }
-
-    [Required]
-    public string Capa { get; set; }
+    
+    public string? Capa { get; set; }
 
     // FK to IdentityUser
     public string? UserId { get; set; }

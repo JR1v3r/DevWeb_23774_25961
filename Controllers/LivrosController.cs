@@ -84,25 +84,51 @@ namespace DevWeb_23774_25961.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Titulo,Autor,ISBN,Sinopse,Capa")] Livros livros)
+        public async Task<IActionResult> Create(Livros livros, IFormFile CapaFile)
         {
-            if (ModelState.IsValid)  // <-- This is the important verification, nya!
+            if (CapaFile == null || CapaFile.Length == 0)
+            {
+                ModelState.AddModelError("CapaFile", "Por favor, selecione uma imagem para a capa.");
+                return View(livros);
+            }
+
+            if (ModelState.IsValid)
             {
                 var user = await _userManager.GetUserAsync(User);
-                if (user == null)
+                if (user == null) return RedirectToPage("/Account/Login", new { area = "Identity" });
+
+                string ext = Path.GetExtension(CapaFile.FileName).ToLowerInvariant();
+                string[] permittedExtensions = { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+
+                if (!permittedExtensions.Contains(ext))
                 {
-                    return RedirectToPage("/Account/Login", new { area = "Identity" });
+                    ModelState.AddModelError("CapaFile", "Apenas imagens (.jpg, .jpeg, .png, .webp, .gif) são permitidas.");
+                    return View(livros);
                 }
 
-                livros.UserId = user.Id;  // Set UserId and IsActive automatically (not from form!)
+                string uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                Directory.CreateDirectory(uploadsPath);
+
+                string fileName = Guid.NewGuid() + ext;
+                string filePath = Path.Combine(uploadsPath, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await CapaFile.CopyToAsync(stream);
+                }
+
+                livros.Capa = "/uploads/" + fileName;
+                livros.UserId = user.Id;
                 livros.IsActive = true;
-                
+
                 _context.Add(livros);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("MyBooks");
+                return RedirectToAction(nameof(MyBooks));
             }
+
             return View(livros);
         }
+
 
         // GET: Livros/Edit/5
         public async Task<IActionResult> Edit(int? id)
