@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -176,17 +177,13 @@ namespace DevWeb_23774_25961.Controllers
                 .FirstOrDefaultAsync(t => t.Id == id);
 
             if (troca == null)
-            {
                 return NotFound();
-            }
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-            {
                 return RedirectToPage("/Account/Login", new { area = "Identity" });
-            }
 
-            // Get the current user's books that are NOT in a pending trade
+            // Filter user's books not in pending trade
             var livrosEmTroca = await _context.Trocas
                 .Where(t => t.IdComprador == user.Id || t.IdVendedor == user.Id)
                 .Where(t => t.Estado == Trocas.EstadoTroca.Pendente)
@@ -195,11 +192,22 @@ namespace DevWeb_23774_25961.Controllers
 
             var meusLivrosDisponiveis = await _context.Livros
                 .Where(l => l.UserId == user.Id && !livrosEmTroca.Contains(l.Id))
+                .Select(l => new
+                {
+                    Id = l.Id,
+                    Titulo = l.Titulo,
+                    Autor = l.Autor,
+                    Capa = l.Capa
+                })
                 .ToListAsync();
 
-            ViewBag.LivrosDisponiveis = new SelectList(meusLivrosDisponiveis, "Id", "Titulo");
+            ViewBag.LivrosDisponiveisJson = JsonSerializer.Serialize(meusLivrosDisponiveis);
+
             return View(troca);
         }
+
+
+
 
         // POST: Trocas/TradeProposal/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.

@@ -43,6 +43,20 @@
     </div>
 
     <div class="d-flex mt-3">
-        <a onclick="window.history.back()" class="btn btn-outline-primary">Voltar</a>
+        <a onclick="window.history.back()" class="btn btn-outline-primary me-2">Voltar</a>
+        @if (Model.Estado == Trocas.EstadoTroca.Pendente)
+        {
+            <form asp-action="Aceitar" method="post" class="d-inline me-2">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn btn-success">Aceitar</button>
+            </form>
+
+            <form asp-action="Recusar" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn btn-danger">Recusar</button>
+            </form>
+        }
     </div>
 </div>

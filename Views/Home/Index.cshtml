@@ -42,7 +42,9 @@
                 <div class="row">
                     @foreach (var troca in Model)
                     {
-                        <div class="col-md-4 mb-4">
+                        if (@troca.Estado == Trocas.EstadoTroca.Criada)
+                        {
+                            <div class="col-md-4 mb-4">
                             <div class="card shadow-sm h-100" style="height: 250px;">
                                 <div class="row g-0 h-100">
                                     <div class="col-4">
@@ -68,6 +70,7 @@
                                 </div>
                             </div>
                         </div>
+                        }
                     }
                 </div>
             </div>
