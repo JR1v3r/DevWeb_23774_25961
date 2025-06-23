@@ -2,6 +2,25 @@
 @{
     ViewData["Title"] = "Home Page";
 }
+<style>
+    .card {
+        min-height: 250px;
+        max-height: 250px;
+    }
+
+    .card img {
+        object-fit: cover;
+        height: 100%;
+        width: 100%;
+    }
+
+    .index-card-title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+
 
 <div class="text-center">
     <section>
@@ -18,27 +37,32 @@
     </section>
     <section class="book-listings">
         <div>
-            <h1 class="index-h1">Livros disponíveis para troca: </h1>
+            <h1 class="index-h1">Livros disponíveis para troca:</h1>
             <div class="container">
                 <div class="row">
                     @foreach (var troca in Model)
                     {
                         <div class="col-md-4 mb-4">
-                            <div class="card shadow-sm h-100">
-                                <div class="row g-0" style="min-height: 100%">
+                            <div class="card shadow-sm h-100" style="height: 250px;">
+                                <div class="row g-0 h-100">
                                     <div class="col-4">
-                                        <img src="@troca.LivroDado?.Capa" alt="Book cover" class="img-fluid rounded-start" style="height: 100%; object-fit: cover;"/>
+                                        <img src="@troca.LivroDado?.Capa" alt="Book cover"
+                                             class="img-fluid rounded-start"
+                                             style="height: 100%; width: 100%; object-fit: cover;" />
                                     </div>
                                     <div class="col-8">
-                                        <div class="card-body index-card-body">
-                                            <h5 class="card-title index-card-title">@troca.LivroDado?.Titulo</h5>
-                                            <p class="card-text"><strong>Author:</strong> @troca.LivroDado?.Autor</p>
-                                            <p class="card-text"><strong>Offered by:</strong> @troca.Vendedor?.UserName</p>
+                                        <div class="card-body d-flex flex-column justify-content-between h-100">
+                                            <div>
+                                                <h5 class="card-title index-card-title text-truncate">@troca.LivroDado?.Titulo</h5>
+                                                <p class="card-text mb-1"><strong>Autor:</strong> @troca.LivroDado?.Autor</p>
+                                                <p class="card-text mb-1"><strong>Vendedor:</strong> @troca.Vendedor?.UserName</p>
+                                                <a asp-controller="Livros" asp-action="Details" asp-route-id="@troca.LivroDado?.Id">Ver mais...</a>
+                                            </div>
                                             @if (@troca.Vendedor?.UserName != @User.Identity?.Name)
                                             {
-                                                <a asp-controller="Trocas" asp-action="TradeProposal" asp-route-id="@troca.Id" class="btn btn-primary">Propor troca</a>    
+                                                <a asp-controller="Trocas" asp-action="TradeProposal" asp-route-id="@troca.Id"
+                                                   class="btn btn-primary btn-sm">Propor troca</a>
                                             }
-                                            
                                         </div>
                                     </div>
                                 </div>
@@ -49,4 +73,5 @@
             </div>
         </div>
     </section>
+
 </div>

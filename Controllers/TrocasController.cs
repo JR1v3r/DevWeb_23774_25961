@@ -99,12 +99,12 @@ namespace DevWeb_23774_25961.Controllers
             {
                 _context.Add(trocas);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("MyBooks", "Livros");
             }
 
             // Just in case validation fails... load ViewData again~
             ViewData["IdLivroDado"] = new SelectList(_context.Livros, "Id", "Titulo", trocas.IdLivroDado);
-            return View(trocas);
+            return RedirectToAction("MyBooks", "Livros");
         }
 
 

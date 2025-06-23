@@ -15,7 +15,7 @@ public class Livros
     public string Autor { get; set; }
 
     [Required]
-    public int ISBN { get; set; }
+    public string ISBN { get; set; }
 
     [Required]
     public string Sinopse { get; set; }
