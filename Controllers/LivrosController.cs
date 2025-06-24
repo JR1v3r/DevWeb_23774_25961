@@ -3,43 +3,35 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DevWeb_23774_25961.Data;
 using DevWeb_23774_25961.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
 namespace DevWeb_23774_25961.Controllers
 {
-    public class LivrosController : Controller
+    public class LivrosController(ApplicationDbContext context, UserManager<IdentityUser> userManager) : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
-        
-        
-        public LivrosController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
-        {
-            _context = context;
-            _userManager = userManager;
-        }
-
         // GET: Livros
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Livros.Include(l => l.User);
+            var applicationDbContext = context.Livros.Include(l => l.User);
             return View(await applicationDbContext.ToListAsync());
         }
         
         // GET: MyBooks
         public async Task<IActionResult> MyBooks()
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await userManager.GetUserAsync(User);
             if (user == null)
             {
                 return RedirectToPage("/Account/Login", new { area = "Identity" });
             }
 
-            var meusLivros = await _context.Livros
+            var meusLivros = await context.Livros
                 .Where(l => l.UserId == user.Id)
                 .ToListAsync();
 
-            var trocasAtivas = await _context.Trocas
+            var trocasAtivas = await context.Trocas
                 .Where(t => t.Estado == Trocas.EstadoTroca.Criada || t.Estado == Trocas.EstadoTroca.Pendente)
                 .ToListAsync();
 
@@ -61,7 +53,7 @@ namespace DevWeb_23774_25961.Controllers
                 return NotFound();
             }
 
-            var livros = await _context.Livros
+            var livros = await context.Livros
                 .Include(l => l.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (livros == null)
@@ -75,7 +67,7 @@ namespace DevWeb_23774_25961.Controllers
         // GET: Livros/Create
         public IActionResult Create()
         {
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
+            ViewData["UserId"] = new SelectList(context.Users, "Id", "Id");
             return View();
         }
 
@@ -84,9 +76,9 @@ namespace DevWeb_23774_25961.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Livros livros, IFormFile CapaFile)
+        public async Task<IActionResult> Create(Livros livros, IFormFile capaFile)
         {
-            if (CapaFile == null || CapaFile.Length == 0)
+            if (capaFile.Length == 0)
             {
                 ModelState.AddModelError("CapaFile", "Por favor, selecione uma imagem para a capa.");
                 return View(livros);
@@ -94,35 +86,35 @@ namespace DevWeb_23774_25961.Controllers
 
             if (ModelState.IsValid)
             {
-                var user = await _userManager.GetUserAsync(User);
+                var user = await userManager.GetUserAsync(User);
                 if (user == null) return RedirectToPage("/Account/Login", new { area = "Identity" });
 
-                string ext = Path.GetExtension(CapaFile.FileName).ToLowerInvariant();
-                string[] permittedExtensions = { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+                var ext = Path.GetExtension(capaFile.FileName).ToLowerInvariant();
+                string[] permittedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
 
                 if (!permittedExtensions.Contains(ext))
                 {
-                    ModelState.AddModelError("CapaFile", "Apenas imagens (.jpg, .jpeg, .png, .webp, .gif) são permitidas.");
+                    ModelState.AddModelError("CapaFile", "Apenas imagens (.jpg, .jpeg, .png, .webp) são permitidas.");
                     return View(livros);
                 }
 
-                string uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
                 Directory.CreateDirectory(uploadsPath);
 
-                string fileName = Guid.NewGuid() + ext;
-                string filePath = Path.Combine(uploadsPath, fileName);
+                var fileName = Guid.NewGuid() + ext;
+                var filePath = Path.Combine(uploadsPath, fileName);
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                await using (var stream = new FileStream(filePath, FileMode.Create))
                 {
-                    await CapaFile.CopyToAsync(stream);
+                    await capaFile.CopyToAsync(stream);
                 }
 
                 livros.Capa = "/uploads/" + fileName;
                 livros.UserId = user.Id;
                 livros.IsActive = true;
 
-                _context.Add(livros);
-                await _context.SaveChangesAsync();
+                context.Add(livros);
+                await context.SaveChangesAsync();
                 return RedirectToAction(nameof(MyBooks));
             }
 
@@ -138,12 +130,12 @@ namespace DevWeb_23774_25961.Controllers
                 return NotFound();
             }
 
-            var livros = await _context.Livros.FindAsync(id);
+            var livros = await context.Livros.FindAsync(id);
             if (livros == null)
             {
                 return NotFound();
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", livros.UserId);
+            ViewData["UserId"] = new SelectList(context.Users, "Id", "Id", livros.UserId);
             return View(livros);
         }
 
@@ -163,8 +155,8 @@ namespace DevWeb_23774_25961.Controllers
             {
                 try
                 {
-                    _context.Update(livros);
-                    await _context.SaveChangesAsync();
+                    context.Update(livros);
+                    await context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -179,7 +171,7 @@ namespace DevWeb_23774_25961.Controllers
                 }
                 return RedirectToAction("MyBooks");
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", livros.UserId);
+            ViewData["UserId"] = new SelectList(context.Users, "Id", "Id", livros.UserId);
             return View(livros);
         }
 
@@ -191,7 +183,7 @@ namespace DevWeb_23774_25961.Controllers
                 return NotFound();
             }
 
-            var livros = await _context.Livros
+            var livros = await context.Livros
                 .Include(l => l.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (livros == null)
@@ -207,19 +199,19 @@ namespace DevWeb_23774_25961.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var livros = await _context.Livros.FindAsync(id);
+            var livros = await context.Livros.FindAsync(id);
             if (livros != null)
             {
-                _context.Livros.Remove(livros);
+                context.Livros.Remove(livros);
             }
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return RedirectToAction("MyBooks");
         }
 
         private bool LivrosExists(int id)
         {
-            return _context.Livros.Any(e => e.Id == id);
+            return context.Livros.Any(e => e.Id == id);
         }
     }
 }

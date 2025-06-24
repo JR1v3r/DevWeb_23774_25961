@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DevWeb_23774_25961.Data;
 using DevWeb_23774_25961.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
 namespace DevWeb_23774_25961.Controllers
@@ -20,6 +21,7 @@ namespace DevWeb_23774_25961.Controllers
         }
 
         // GET: Trocas
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Trocas.Include(t => t.Comprador).Include(t => t.LivroDado).Include(t => t.LivroRecebido).Include(t => t.Vendedor);

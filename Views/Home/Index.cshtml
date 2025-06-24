@@ -42,15 +42,16 @@
                 <div class="row">
                     @foreach (var troca in Model)
                     {
-                        if (@troca.Estado == Trocas.EstadoTroca.Criada)
+                        if (@troca.Estado != Trocas.EstadoTroca.Criada)
                         {
-                            <div class="col-md-4 mb-4">
+                            continue;
+                        }
+
+                        <div class="col-md-4 mb-4">
                             <div class="card shadow-sm h-100" style="height: 250px;">
                                 <div class="row g-0 h-100">
                                     <div class="col-4">
-                                        <img src="@troca.LivroDado?.Capa" alt="Book cover"
-                                             class="img-fluid rounded-start"
-                                             style="height: 100%; width: 100%; object-fit: cover;" />
+                                        <img src="@troca.LivroDado?.Capa" alt="Book cover" class="img-fluid rounded-start" style="height: 100%; width: 100%; object-fit: cover;" />
                                     </div>
                                     <div class="col-8">
                                         <div class="card-body d-flex flex-column justify-content-between h-100">
@@ -62,19 +63,16 @@
                                             </div>
                                             @if (@troca.Vendedor?.UserName != @User.Identity?.Name)
                                             {
-                                                <a asp-controller="Trocas" asp-action="TradeProposal" asp-route-id="@troca.Id"
-                                                   class="btn btn-primary btn-sm">Propor troca</a>
+                                                <a asp-controller="Trocas" asp-action="TradeProposal" asp-route-id="@troca.Id" class="btn btn-primary btn-sm">Propor troca</a>
                                             }
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        }
                     }
                 </div>
             </div>
         </div>
     </section>
-
 </div>
