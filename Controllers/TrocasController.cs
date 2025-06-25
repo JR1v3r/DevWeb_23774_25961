@@ -9,34 +9,29 @@ using Microsoft.AspNetCore.Identity;
 
 namespace DevWeb_23774_25961.Controllers
 {
-    public class TrocasController : Controller
+    public class TrocasController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
-
-        public TrocasController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
-        {
-            _context = context;
-            _userManager = userManager;
-        }
-
         // GET: Trocas
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Trocas.Include(t => t.Comprador).Include(t => t.LivroDado).Include(t => t.LivroRecebido).Include(t => t.Vendedor);
+            var applicationDbContext = context.Trocas.Include(t => t.Comprador).Include(t => t.LivroDado).Include(t => t.LivroRecebido).Include(t => t.Vendedor);
             return View(await applicationDbContext.ToListAsync());
         }
+        
+        
         // GET: Livros/MyTrades
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> MyTrades()
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await userManager.GetUserAsync(User);
             if (user == null)
             {
                 return RedirectToPage("/Account/Login", new { area = "Identity" });
             }
 
-            var minhasTrocas = await _context.Trocas
+            var minhasTrocas = await context.Trocas
                 .Include(t => t.LivroDado)
                 .Include(t => t.Vendedor)
                 .Include(t => t.Comprador)
@@ -46,7 +41,10 @@ namespace DevWeb_23774_25961.Controllers
 
             return View(minhasTrocas);
         }
+        
+        
         // GET: Trocas/Details/5
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -54,38 +52,53 @@ namespace DevWeb_23774_25961.Controllers
                 return NotFound();
             }
 
-            var trocas = await _context.Trocas
+            var user = await userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
+            
+            var trocas = await context.Trocas
                 .Include(t => t.Comprador)
                 .Include(t => t.LivroDado)
                 .Include(t => t.LivroRecebido)
                 .Include(t => t.Vendedor)
                 .FirstOrDefaultAsync(m => m.Id == id);
+            
             if (trocas == null)
             {
                 return NotFound();
+            }
+            
+            if (trocas.IdVendedor != user.Id 
+                || trocas.IdComprador == user.Id)
+            {
+                return Forbid();
             }
 
             return View(trocas);
         }
 
         // GET: Trocas/Create
+        [Authorize(Roles = "Admin,User")]
         public IActionResult Create()
         {
-            ViewData["IdComprador"] = new SelectList(_context.Users, "Id", "Id");
-            ViewData["IdLivroDado"] = new SelectList(_context.Livros, "Id", "Autor");
-            ViewData["IdLivroRecebido"] = new SelectList(_context.Livros, "Id", "Autor");
-            ViewData["IdVendedor"] = new SelectList(_context.Users, "Id", "Id");
+            ViewData["IdComprador"] = new SelectList(context.Users, "Id", "Id");
+            ViewData["IdLivroDado"] = new SelectList(context.Livros, "Id", "Autor");
+            ViewData["IdLivroRecebido"] = new SelectList(context.Livros, "Id", "Autor");
+            ViewData["IdVendedor"] = new SelectList(context.Users, "Id", "Id");
             return View();
         }
 
         // POST: Trocas/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(Roles = "Admin,User")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("IdLivroDado")] Trocas trocas)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await userManager.GetUserAsync(User);
             if (user == null)
             {
                 return RedirectToPage("/Account/Login", new { area = "Identity" });
@@ -100,18 +113,19 @@ namespace DevWeb_23774_25961.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Add(trocas);
-                await _context.SaveChangesAsync();
+                context.Add(trocas);
+                await context.SaveChangesAsync();
                 return RedirectToAction("MyBooks", "Livros");
             }
 
             // Just in case validation fails... load ViewData again~
-            ViewData["IdLivroDado"] = new SelectList(_context.Livros, "Id", "Titulo", trocas.IdLivroDado);
+            ViewData["IdLivroDado"] = new SelectList(context.Livros, "Id", "Titulo", trocas.IdLivroDado);
             return RedirectToAction("MyBooks", "Livros");
         }
 
 
         // GET: Trocas/Edit/5
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -119,21 +133,22 @@ namespace DevWeb_23774_25961.Controllers
                 return NotFound();
             }
 
-            var trocas = await _context.Trocas.FindAsync(id);
+            var trocas = await context.Trocas.FindAsync(id);
             if (trocas == null)
             {
                 return NotFound();
             }
-            ViewData["IdComprador"] = new SelectList(_context.Users, "Id", "Id", trocas.IdComprador);
-            ViewData["IdLivroDado"] = new SelectList(_context.Livros, "Id", "Autor", trocas.IdLivroDado);
-            ViewData["IdLivroRecebido"] = new SelectList(_context.Livros, "Id", "Autor", trocas.IdLivroRecebido);
-            ViewData["IdVendedor"] = new SelectList(_context.Users, "Id", "Id", trocas.IdVendedor);
+            ViewData["IdComprador"] = new SelectList(context.Users, "Id", "Id", trocas.IdComprador);
+            ViewData["IdLivroDado"] = new SelectList(context.Livros, "Id", "Autor", trocas.IdLivroDado);
+            ViewData["IdLivroRecebido"] = new SelectList(context.Livros, "Id", "Autor", trocas.IdLivroRecebido);
+            ViewData["IdVendedor"] = new SelectList(context.Users, "Id", "Id", trocas.IdVendedor);
             return View(trocas);
         }
 
         // POST: Trocas/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(Roles = "Admin,User")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,IdLivroDado,IdLivroRecebido,IdVendedor,IdComprador,Estado,Timestamp")] Trocas trocas)
@@ -147,8 +162,8 @@ namespace DevWeb_23774_25961.Controllers
             {
                 try
                 {
-                    _context.Update(trocas);
-                    await _context.SaveChangesAsync();
+                    context.Update(trocas);
+                    await context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -156,24 +171,21 @@ namespace DevWeb_23774_25961.Controllers
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(MyTrades));
             }
-            ViewData["IdComprador"] = new SelectList(_context.Users, "Id", "Id", trocas.IdComprador);
-            ViewData["IdLivroDado"] = new SelectList(_context.Livros, "Id", "Autor", trocas.IdLivroDado);
-            ViewData["IdLivroRecebido"] = new SelectList(_context.Livros, "Id", "Autor", trocas.IdLivroRecebido);
-            ViewData["IdVendedor"] = new SelectList(_context.Users, "Id", "Id", trocas.IdVendedor);
+            ViewData["IdComprador"] = new SelectList(context.Users, "Id", "Id", trocas.IdComprador);
+            ViewData["IdLivroDado"] = new SelectList(context.Livros, "Id", "Autor", trocas.IdLivroDado);
+            ViewData["IdLivroRecebido"] = new SelectList(context.Livros, "Id", "Autor", trocas.IdLivroRecebido);
+            ViewData["IdVendedor"] = new SelectList(context.Users, "Id", "Id", trocas.IdVendedor);
             return View(trocas);
         }
 
         // GET: Trocas/TradeProposal/5
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> TradeProposal(int id)
         {
-            var troca = await _context.Trocas
+            var troca = await context.Trocas
                 .Include(t => t.LivroDado)
                 .Include(t => t.Vendedor)
                 .FirstOrDefaultAsync(t => t.Id == id);
@@ -181,18 +193,18 @@ namespace DevWeb_23774_25961.Controllers
             if (troca == null)
                 return NotFound();
 
-            var user = await _userManager.GetUserAsync(User);
+            var user = await userManager.GetUserAsync(User);
             if (user == null)
                 return RedirectToPage("/Account/Login", new { area = "Identity" });
 
             // Filter user's books not in pending trade
-            var livrosEmTroca = await _context.Trocas
+            var livrosEmTroca = await context.Trocas
                 .Where(t => t.IdComprador == user.Id || t.IdVendedor == user.Id)
                 .Where(t => t.Estado == Trocas.EstadoTroca.Pendente)
                 .Select(t => t.IdLivroDado)
                 .ToListAsync();
 
-            var meusLivrosDisponiveis = await _context.Livros
+            var meusLivrosDisponiveis = await context.Livros
                 .Where(l => l.UserId == user.Id && !livrosEmTroca.Contains(l.Id))
                 .Select(l => new
                 {
@@ -214,17 +226,18 @@ namespace DevWeb_23774_25961.Controllers
         // POST: Trocas/TradeProposal/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(Roles = "Admin,User")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> TradeProposal(int id, [Bind("IdLivroRecebido")] Trocas updatedTrade)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await userManager.GetUserAsync(User);
             if (user == null)
             {
                 return RedirectToPage("/Account/Login", new { area = "Identity" });
             }
 
-            var troca = await _context.Trocas.FindAsync(id);
+            var troca = await context.Trocas.FindAsync(id);
             if (troca == null)
             {
                 return NotFound();
@@ -238,19 +251,19 @@ namespace DevWeb_23774_25961.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Update(troca);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                context.Update(troca);
+                await context.SaveChangesAsync();
+                return RedirectToAction(nameof(MyTrades));
             }
 
             // If there's a validation issue, re-render the view
-            var livrosEmTroca = await _context.Trocas
+            var livrosEmTroca = await context.Trocas
                 .Where(t => t.IdComprador == user.Id || t.IdVendedor == user.Id)
                 .Where(t => t.Estado == Trocas.EstadoTroca.Pendente)
                 .Select(t => t.IdLivroDado)
                 .ToListAsync();
 
-            var meusLivrosDisponiveis = await _context.Livros
+            var meusLivrosDisponiveis = await context.Livros
                 .Where(l => l.UserId == user.Id && !livrosEmTroca.Contains(l.Id))
                 .ToListAsync();
 
@@ -260,6 +273,7 @@ namespace DevWeb_23774_25961.Controllers
 
         
         // GET: Trocas/Delete/5
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -267,30 +281,40 @@ namespace DevWeb_23774_25961.Controllers
                 return NotFound();
             }
 
-            var trocas = await _context.Trocas
+            var user = await userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            
+            var trocas = await context.Trocas
                 .Include(t => t.Comprador)
                 .Include(t => t.LivroDado)
                 .Include(t => t.LivroRecebido)
                 .Include(t => t.Vendedor)
                 .FirstOrDefaultAsync(m => m.Id == id);
+            
             if (trocas == null)
             {
                 return NotFound();
             }
 
+            if (trocas.IdVendedor != user.Id){
+                return Forbid();
+            }
+            
             return View(trocas);
         }
 
         // POST: Trocas/Delete/5
+        [Authorize(Roles = "Admin,User")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await userManager.GetUserAsync(User);
             if (user == null)
                 return RedirectToPage("/Account/Login", new { area = "Identity" });
 
-            var troca = await _context.Trocas.FindAsync(id);
+            var troca = await context.Trocas.FindAsync(id);
             if (troca == null)
                 return NotFound();
 
@@ -300,7 +324,7 @@ namespace DevWeb_23774_25961.Controllers
             // 🍌 If you're the one who created the trade, you can delete it completely
             if (isVendedor)
             {
-                _context.Trocas.Remove(troca);
+                context.Trocas.Remove(troca);
             }
             // 🍡 If you're the one who proposed a trade, nullify your proposal and revert status
             else if (isComprador)
@@ -309,27 +333,30 @@ namespace DevWeb_23774_25961.Controllers
                 troca.IdComprador = null;
                 troca.Estado = Trocas.EstadoTroca.Criada;
 
-                _context.Trocas.Update(troca);
+                context.Trocas.Update(troca);
             }
             else
             {
                 return Forbid(); // you can't touch trades you're not part of >:c
             }
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return RedirectToAction("MyBooks", "Livros");
         }
         
+        
+        // POST: Trocas/Aceitar/5
+        [Authorize(Roles = "Admin,User")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Aceitar(int id)
         {
-            var troca = await _context.Trocas
+            var troca = await context.Trocas
                 .Include(t => t.LivroDado)
                 .Include(t => t.LivroRecebido)
                 .FirstOrDefaultAsync(t => t.Id == id);
 
-            var user = await _userManager.GetUserAsync(User);
+            var user = await userManager.GetUserAsync(User);
             if (troca == null || troca.IdVendedor != user.Id)
                 return Forbid();
 
@@ -351,23 +378,25 @@ namespace DevWeb_23774_25961.Controllers
 
                 troca.Estado = Trocas.EstadoTroca.Aceite;
 
-                _context.Update(livroDado);
-                _context.Update(livroRecebido);
-                _context.Update(troca);
+                context.Update(livroDado);
+                context.Update(livroRecebido);
+                context.Update(troca);
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
 
             return RedirectToAction("MyTrades");
         }
 
         
+        // POST: Trocas/Recusar/5
+        [Authorize(Roles = "Admin,User")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Recusar(int id)
         {
-            var troca = await _context.Trocas.FindAsync(id);
-            var user = await _userManager.GetUserAsync(User);
+            var troca = await context.Trocas.FindAsync(id);
+            var user = await userManager.GetUserAsync(User);
 
             if (troca == null || troca.IdVendedor != user.Id)
                 return Forbid();
@@ -377,16 +406,16 @@ namespace DevWeb_23774_25961.Controllers
 
             troca.Estado = Trocas.EstadoTroca.Recusada;
 
-            _context.Update(troca);
-            await _context.SaveChangesAsync();
+            context.Update(troca);
+            await context.SaveChangesAsync();
 
             return RedirectToAction("MyTrades");
         }
-
+        
         
         private bool TrocasExists(int id)
         {
-            return _context.Trocas.Any(e => e.Id == id);
+            return context.Trocas.Any(e => e.Id == id);
         }
     }
 }

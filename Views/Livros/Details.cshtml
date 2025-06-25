@@ -1,3 +1,5 @@
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model DevWeb_23774_25961.Models.Livros
 
 @{
@@ -21,8 +23,12 @@
     </div>
 
     <div class="d-flex justify-content-end">
-        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-success me-2">Editar</a>
-        <a asp-action="Delete" asp-route-id="@Model?.Id" class="btn btn-danger me-2">Eliminar</a>
+        @if (Model.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+        {
+            <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-success me-2">Editar</a>
+            <a asp-action="Delete" asp-route-id="@Model?.Id" class="btn btn-danger me-2">Eliminar</a>
+        }
         <a onclick="window.history.back()" class="btn btn-outline-primary">Voltar</a>
     </div>
+
 </div>

@@ -19,6 +19,7 @@ namespace DevWeb_23774_25961.Controllers
         }
         
         // GET: MyBooks
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> MyBooks()
         {
             var user = await userManager.GetUserAsync(User);
@@ -42,8 +43,6 @@ namespace DevWeb_23774_25961.Controllers
             return View(model);
 
         }
-
-
         
         // GET: Livros/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -65,6 +64,7 @@ namespace DevWeb_23774_25961.Controllers
         }
 
         // GET: Livros/Create
+        [Authorize(Roles = "Admin,User")]
         public IActionResult Create()
         {
             ViewData["UserId"] = new SelectList(context.Users, "Id", "Id");
@@ -74,6 +74,7 @@ namespace DevWeb_23774_25961.Controllers
         // POST: Livros/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(Roles = "Admin,User")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Livros livros, IFormFile capaFile)
@@ -123,18 +124,32 @@ namespace DevWeb_23774_25961.Controllers
 
 
         // GET: Livros/Edit/5
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-
+            
             var livros = await context.Livros.FindAsync(id);
+            
             if (livros == null)
             {
                 return NotFound();
             }
+            
+            var user = await userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
+            
+            if (livros.UserId != user.Id)
+            {
+                return Forbid();
+            }
+            
             ViewData["UserId"] = new SelectList(context.Users, "Id", "Id", livros.UserId);
             return View(livros);
         }
@@ -142,6 +157,7 @@ namespace DevWeb_23774_25961.Controllers
         // POST: Livros/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(Roles = "Admin,User")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,Autor,ISBN,Sinopse,Capa,UserId,IsActive")] Livros livros)
@@ -149,6 +165,17 @@ namespace DevWeb_23774_25961.Controllers
             if (id != livros.Id)
             {
                 return NotFound();
+            }
+            
+            var user = await userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
+            
+            if (livros.UserId != user.Id)
+            {
+                return Forbid();
             }
 
             if (ModelState.IsValid)
@@ -171,11 +198,13 @@ namespace DevWeb_23774_25961.Controllers
                 }
                 return RedirectToAction("MyBooks");
             }
+            
             ViewData["UserId"] = new SelectList(context.Users, "Id", "Id", livros.UserId);
             return View(livros);
         }
 
         // GET: Livros/Delete/5
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -183,28 +212,54 @@ namespace DevWeb_23774_25961.Controllers
                 return NotFound();
             }
 
+            var user = await userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
+            
             var livros = await context.Livros
                 .Include(l => l.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
+            
             if (livros == null)
             {
                 return NotFound();
+            }
+            
+            if (livros.UserId != user.Id)
+            {
+                return Forbid();
             }
 
             return View(livros);
         }
 
         // POST: Livros/Delete/5
+        [Authorize(Roles = "Admin,User")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var livros = await context.Livros.FindAsync(id);
-            if (livros != null)
+            var user = await userManager.GetUserAsync(User);
+            if (user == null)
             {
-                context.Livros.Remove(livros);
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
             }
 
+            var livro = await context.Livros.FindAsync(id);
+
+            if (livro == null)
+            {
+                return NotFound();
+            }
+
+            if (livro.UserId != user.Id)
+            {
+                return Forbid();
+            }
+
+            context.Livros.Remove(livro);
             await context.SaveChangesAsync();
             return RedirectToAction("MyBooks");
         }

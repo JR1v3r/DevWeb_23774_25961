@@ -119,6 +119,8 @@ namespace DevWeb_23774_25961.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
+                    await _userManager.AddToRoleAsync(user, "User");
+                    
                     _logger.LogInformation("O utilizador criou uma conta nova com palavra-passe.");
 
                     var userId = await _userManager.GetUserIdAsync(user);

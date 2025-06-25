@@ -1,0 +1,17 @@
+﻿@page
+@model AccessDeniedModel
+
+<div class="container text-center mt-5">
+        <img src="@Url.Content("~/accessDenied.jpg")" class="img-fluid mb-4" style="max-height: 250px; object-fit: contain;" alt="Acesso negado" />
+
+        <h1 class="text-danger fw-bold mb-3">ACESSO NEGADO</h1>
+
+        <h4 class="text-muted mb-3">Não há nada para ver neste canto da biblioteca...</h4>
+
+        <p class="text-black mb-4">
+            Não possui acesso a este recurso ou página.<br/>
+            Caso necessite de acesso, por favor entre em contacto com a Administração do site.
+        </p>
+
+        <a href="javascript:history.back()" class="btn btn-outline-primary">Voltar</a>
+</div>
