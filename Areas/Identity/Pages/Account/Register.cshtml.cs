@@ -75,7 +75,7 @@ namespace DevWeb_23774_25961.Areas.Identity.Pages.Account
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [Required(ErrorMessage = "O campo Email é de preenchimento obrigatório.")]
-            [EmailAddress]
+            [EmailAddress(ErrorMessage = "Por favor, insira um endereço de email válido.")]
             [Display(Name = "Email")]
             public string Email { get; set; }
             /// <summary>
@@ -84,6 +84,8 @@ namespace DevWeb_23774_25961.Areas.Identity.Pages.Account
             /// </summary>
             [Required(ErrorMessage = "O campo Palavra-passe é de preenchimento obrigatório.")]
             [StringLength(100, ErrorMessage = "A {0} deve ter no mínimo {2} e no máximo {1} caracteres de comprimento.", MinimumLength = 6)]
+            [RegularExpression(@"^(?=.*\d)(?=.*[A-Z]).*$", 
+                ErrorMessage = "A password deve conter pelo menos um dígito (0-9) e uma letra maiúscula (A-Z).")]
             [DataType(DataType.Password)]
             [Display(Name = "Palavra-passe")]
             public string Password { get; set; }

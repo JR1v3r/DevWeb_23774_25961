@@ -72,7 +72,7 @@ namespace DevWeb_23774_25961.Areas.Identity.Pages.Account.Manage
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [DataType(DataType.Password)]
-            [Display(Name = "Confirme a nova palavra-passe new password")]
+            [Display(Name = "Confirme a nova palavra-passe")]
             [Compare("NewPassword", ErrorMessage = "A Palavra-passe e confirmação da Palavra-passe não coincidem.")]
             public string ConfirmPassword { get; set; }
         }
