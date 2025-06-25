@@ -1,14 +1,30 @@
 @model IEnumerable<Trocas>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Trocas";
 }
 
-<h1>Index</h1>
+<h1>Trocas</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+<div class="d-flex flex-column min-vh-20">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm py-2">
+            <div class="container-fluid flex-column">
+                <!-- Bottom Row: Links -->
+                <div class="w-20 d-flex justify-content-center">
+                    <ul class="nav">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Livros">Livros</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Trocas">Trocas</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+</div>
 <table class="table">
     <thead>
         <tr>
@@ -55,9 +71,9 @@
                 @Html.DisplayFor(modelItem => item.Timestamp)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Detalhes</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Apagar</a>
             </td>
         </tr>
 }

@@ -1,14 +1,31 @@
 @model IEnumerable<DevWeb_23774_25961.Models.Livros>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Livros";
 }
 
-<h1>Índice</h1>
+<h1>Livros</h1>
 
-<p>
-    <a asp-action="Create">Criar novo</a>
-</p>
+<section class="d-flex flex-column min-vh-20">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm py-2">
+            <div class="container-fluid flex-column">
+                <!-- Bottom Row: Links -->
+                <div class="w-20 d-flex justify-content-center">
+                    <ul class="nav">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Livros">Livros</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Trocas">Trocas</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+</section>
+
 <table class="table">
     <thead>
         <tr>
