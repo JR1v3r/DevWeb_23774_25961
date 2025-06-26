@@ -15,6 +15,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddRoles<IdentityRole>() // Add user role support
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 
 builder.Services.ConfigureApplicationCookie(options =>
