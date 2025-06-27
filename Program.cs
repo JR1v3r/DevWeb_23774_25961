@@ -1,6 +1,9 @@
+using System.Net;
+using System.Net.Mail;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DevWeb_23774_25961.Data;
+using DevWeb_23774_25961.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +17,8 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>() // Add user role support
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddScoped<EmailSender>(); // Add email sender service
 
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
@@ -75,4 +80,29 @@ async Task CreateRoles(IServiceProvider serviceProvider)
             await roleManager.CreateAsync(new IdentityRole(roleName));
         }
     }
+}
+
+async Task SendSapoEmailAsync(string emailDestino, string thesubject, string thebody)
+{
+    var fromAddress = new MailAddress("devweblivros@sapo.pt");
+    var toAddress = new MailAddress(emailDestino);
+
+    var smtp = new SmtpClient
+    {
+        Host = "smtp.sapo.pt",
+        Port = 587, // ou 465
+        EnableSsl = true,
+        DeliveryMethod = SmtpDeliveryMethod.Network,
+        UseDefaultCredentials = false,
+        Credentials = new NetworkCredential("devweblivros@sapo.pt", "JmF.2025")
+    };
+
+    using var message = new MailMessage(fromAddress, toAddress)
+    {
+        Subject = thesubject,
+        Body = thebody,
+        IsBodyHtml = false
+    };
+
+    await smtp.SendMailAsync(message);
 }

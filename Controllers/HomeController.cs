@@ -25,6 +25,8 @@ public class HomeController : Controller
             .Where(t => t.LivroDado != null && t.Vendedor != null)
             .ToListAsync();
 
+        
+        
         return View(trades); 
     }
 
