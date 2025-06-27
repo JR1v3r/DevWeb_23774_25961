@@ -29,6 +29,7 @@ namespace DevWeb_23774_25961.Areas.Identity.Pages.Account.Manage
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
+        [BindProperty]
         public string Username { get; set; }
 
         /// <summary>
@@ -88,6 +89,7 @@ namespace DevWeb_23774_25961.Areas.Identity.Pages.Account.Manage
         public async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
+    
             if (user == null)
             {
                 return NotFound($"Não é possível carregar o utilizador com ID '{_userManager.GetUserId(User)}'.");
@@ -99,13 +101,28 @@ namespace DevWeb_23774_25961.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
+            // Update Username if it changed
+            if (Username != user.UserName)
+            {
+                user.UserName = Username;
+                user.NormalizedUserName = Username.ToUpper(); // Normalize for internal comparison
+
+                var setUsernameResult = await _userManager.UpdateAsync(user);
+                if (!setUsernameResult.Succeeded)
+                {
+                    StatusMessage = "Erro inesperado ao tentar atualizar o nome de utilizador.";
+                    return RedirectToPage();
+                }
+            }
+
+            // Update Phone Number if it changed
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
             if (Input.PhoneNumber != phoneNumber)
             {
                 var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
                 if (!setPhoneResult.Succeeded)
                 {
-                    StatusMessage = "Erro inesperado ao tentar definir um número de telemovel.";
+                    StatusMessage = "Erro inesperado ao tentar definir um número de telemóvel.";
                     return RedirectToPage();
                 }
             }
@@ -114,5 +131,6 @@ namespace DevWeb_23774_25961.Areas.Identity.Pages.Account.Manage
             StatusMessage = "O seu perfil foi atualizado";
             return RedirectToPage();
         }
+
     }
 }
