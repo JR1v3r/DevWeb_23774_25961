@@ -111,11 +111,8 @@ namespace DevWeb_23774_25961.Areas.Identity.Pages.Account.Manage
 
             var changePasswordResult = await _userManager.ChangePasswordAsync(user, Input.OldPassword, Input.NewPassword);
             if (!changePasswordResult.Succeeded)
-            {
-                foreach (var error in changePasswordResult.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
+            { 
+                ModelState.AddModelError("", "Erro ao alterar palavra-passe. Verifique a informação inserida.");
                 return Page();
             }
 
