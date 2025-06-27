@@ -44,11 +44,12 @@
                 <tbody>
                 @foreach (var livro in Model)
                 {
-                    <tr>
-                        <td>@livro.Titulo</td>
-                        <td>@livro.Autor</td>
-                        <td>@livro.ISBN</td>
-                    </tr>
+                        <tr onclick="window.location.href='@Url.Action("Details", "Livros", new { id = livro.Id })'"
+                            style="cursor: pointer;">
+                            <td>@livro.Titulo</td>
+                            <td>@livro.Autor</td>
+                            <td>@livro.ISBN</td>
+                        </tr>
                 }
                 </tbody>
             </table>
