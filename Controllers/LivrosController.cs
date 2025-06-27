@@ -160,19 +160,16 @@ namespace DevWeb_23774_25961.Controllers
         [Authorize(Roles = "Admin,User")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,Autor,ISBN,Sinopse,Capa,UserId,IsActive")] Livros livros)
+        public async Task<IActionResult> Edit(int id, Livros livros, IFormFile capaFile)
         {
             if (id != livros.Id)
             {
                 return NotFound();
             }
-            
+
             var user = await userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return RedirectToPage("/Account/Login", new { area = "Identity" });
-            }
-            
+            if (user == null) return RedirectToPage("/Account/Login", new { area = "Identity" });
+
             if (livros.UserId != user.Id)
             {
                 return Forbid();
@@ -182,26 +179,55 @@ namespace DevWeb_23774_25961.Controllers
             {
                 try
                 {
-                    context.Update(livros);
+                    // Find the existing book in DB
+                    var existingLivro = await context.Livros.FindAsync(id);
+                    if (existingLivro == null) return NotFound();
+
+                    existingLivro.Titulo = livros.Titulo;
+                    existingLivro.Autor = livros.Autor;
+                    existingLivro.ISBN = livros.ISBN;
+                    existingLivro.Sinopse = livros.Sinopse;
+
+                    if (capaFile != null && capaFile.Length > 0)
+                    {
+                        var ext = Path.GetExtension(capaFile.FileName).ToLowerInvariant();
+                        string[] permittedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+
+                        if (!permittedExtensions.Contains(ext))
+                        {
+                            ModelState.AddModelError("CapaFile", "Apenas imagens (.jpg, .jpeg, .png, .webp) são permitidas.");
+                            return View(livros);
+                        }
+
+                        var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                        Directory.CreateDirectory(uploadsPath);
+
+                        var fileName = Guid.NewGuid() + ext;
+                        var filePath = Path.Combine(uploadsPath, fileName);
+
+                        await using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await capaFile.CopyToAsync(stream);
+                        }
+
+                        existingLivro.Capa = "/uploads/" + fileName;
+                    }
+
+                    context.Update(existingLivro);
                     await context.SaveChangesAsync();
+                    return RedirectToAction(nameof(MyBooks));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!LivrosExists(livros.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!LivrosExists(livros.Id)) return NotFound();
+                    else throw;
                 }
-                return RedirectToAction("MyBooks");
             }
-            
-            ViewData["UserId"] = new SelectList(context.Users, "Id", "Id", livros.UserId);
+
             return View(livros);
         }
+
+
 
         // GET: Livros/Delete/5
         [Authorize(Roles = "Admin,User")]

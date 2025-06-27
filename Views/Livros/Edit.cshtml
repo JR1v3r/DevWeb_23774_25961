@@ -9,48 +9,58 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit" id="editBook">
+        <form asp-action="Edit" id="editBook" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
+
             <div class="form-group">
                 <label asp-for="Titulo" class="control-label"></label>
                 <input asp-for="Titulo" class="form-control" />
                 <span asp-validation-for="Titulo" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="Autor" class="control-label"></label>
                 <input asp-for="Autor" class="form-control" />
                 <span asp-validation-for="Autor" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="ISBN" class="control-label"></label>
                 <input asp-for="ISBN" class="form-control" />
                 <span asp-validation-for="ISBN" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="Sinopse" class="control-label"></label>
                 <textarea form="editBook" rows="10" asp-for="Sinopse" class="form-control"></textarea>
                 <span asp-validation-for="Sinopse" class="text-danger"></span>
             </div>
+
             <div class="form-group">
-                <label asp-for="Capa" class="control-label"></label>
-                <input asp-for="Capa" class="form-control"></input>
-                <span asp-validation-for="Capa" class="text-danger"></span>
+                <label for="capaFile" class="control-label">Nova Capa (opcional)</label>
+                <input type="file" name="capaFile" class="form-control" />
             </div>
+
+            @if (!string.IsNullOrEmpty(Model.Capa))
+            {
+                <p>Capa atual:</p>
+                <img src="@Model.Capa" style="max-width: 200px;" />
+            }
+
             <div class="form-group" hidden>
-                <label asp-for="UserId" class="control-label"></label>
-                <select asp-for="UserId" class="form-control" asp-items="ViewBag.UserId"></select>
-                <span asp-validation-for="UserId" class="text-danger"></span>
+                <input asp-for="UserId" class="form-control" />
             </div>
+
             <div class="form-group" hidden>
-                <label asp-for="IsActive" class="control-label"></label>
                 <input asp-for="IsActive" class="form-control" />
-                <span asp-validation-for="IsActive" class="text-danger"></span>
             </div>
+
             <div class="form-group" style="margin-top: 10px;">
                 <a onclick="window.history.back()" class="btn btn-outline-primary">Voltar</a>
-                <input type="submit" value="Save" class="btn btn-success"/>
+                <input type="submit" value="Guardar" class="btn btn-success" />
             </div>
         </form>
+
     </div>
 </div>
