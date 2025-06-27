@@ -1,0 +1,57 @@
+@model IEnumerable<DevWeb_23774_25961.Models.Livros>
+
+@{
+    ViewData["Title"] = "Resultados de Pesquisa";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">@ViewData["Title"]</h2>
+
+    <!-- Formulário de pesquisa da página de resultados -->
+    <form asp-controller="Search" asp-action="Index" method="get" class="mb-4 w-100">
+        <div class="input-group">
+            <input class="form-control rounded-pill ps-4 pe-5" 
+                   type="search" 
+                   name="query" 
+                   value="@Context.Request.Query["query"]"
+                   placeholder="Pesquisar livros, autores, ISBNs" 
+                   aria-label="Pesquisa">
+            <button class="btn position-absolute end-0 top-50 translate-middle-y me-2 text-purple" 
+                    type="submit" 
+                    style="background: none; border: none;">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </form>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Nenhum livro encontrado para a sua pesquisa.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                <tr>
+                    <th>Título</th>
+                    <th>Autor</th>
+                    <th>ISBN</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var livro in Model)
+                {
+                    <tr>
+                        <td>@livro.Titulo</td>
+                        <td>@livro.Autor</td>
+                        <td>@livro.ISBN</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
