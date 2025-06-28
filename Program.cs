@@ -18,7 +18,9 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddRoles<IdentityRole>() // Add user role support
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<EmailSender>(); // Add email sender service
+
 
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
