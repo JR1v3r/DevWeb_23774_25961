@@ -1,3 +1,5 @@
+@using Azure.Core
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model IEnumerable<DevWeb_23774_25961.Models.Livros>
 
 @{
@@ -26,32 +28,67 @@
     </header>
 </section>
 
+<form asp-controller="Livros" asp-action="Index" method="get" class="row mb-4">
+    <div class="col-md-3">
+        <input type="text" name="titulo" value="@Context.Request.Query["titulo"]" class="form-control" placeholder="Filtrar por Título" />
+    </div>
+    <div class="col-md-3">
+        <input type="text" name="autor" value="@Context.Request.Query["autor"]" class="form-control" placeholder="Filtrar por Autor" />
+    </div>
+    <div class="col-md-3">
+        <input type="text" name="isbn" value="@Context.Request.Query["isbn"]" class="form-control" placeholder="Filtrar por ISBN" />
+    </div>
+    <div class="col-md-3">
+        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+    </div>
+</form>
+
+
 <table class="table">
     <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Titulo)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Autor)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ISBN)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Sinopse)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Capa)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.User)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsActive)
-            </th>
-            <th></th>
-        </tr>
+    <tr>
+        <th>
+            <a asp-action="Index"
+               asp-route-titulo="@(Context.Request.Query["titulo"])"
+               asp-route-autor="@(Context.Request.Query["autor"])"
+               asp-route-isbn="@(Context.Request.Query["isbn"])"
+               asp-route-sortOrder="titulo_asc">Título ↑</a> |
+            <a asp-action="Index"
+               asp-route-titulo="@(Context.Request.Query["titulo"])"
+               asp-route-autor="@(Context.Request.Query["autor"])"
+               asp-route-isbn="@(Context.Request.Query["isbn"])"
+               asp-route-sortOrder="titulo_desc">↓</a>
+        </th>
+        <th>
+            <a asp-action="Index"
+               asp-route-titulo="@(Context.Request.Query["titulo"])"
+               asp-route-autor="@(Context.Request.Query["autor"])"
+               asp-route-isbn="@(Context.Request.Query["isbn"])"
+               asp-route-sortOrder="autor_asc">Autor ↑</a> |
+            <a asp-action="Index"
+               asp-route-titulo="@(Context.Request.Query["titulo"])"
+               asp-route-autor="@(Context.Request.Query["autor"])"
+               asp-route-isbn="@(Context.Request.Query["isbn"])"
+               asp-route-sortOrder="autor_desc">↓</a>
+        </th>
+        <th>
+            <a asp-action="Index"
+               asp-route-titulo="@(Context.Request.Query["titulo"])"
+               asp-route-autor="@(Context.Request.Query["autor"])"
+               asp-route-isbn="@(Context.Request.Query["isbn"])"
+               asp-route-sortOrder="isbn_asc">ISBN ↑</a> |
+            <a asp-action="Index"
+               asp-route-titulo="@(Context.Request.Query["titulo"])"
+               asp-route-autor="@(Context.Request.Query["autor"])"
+               asp-route-isbn="@(Context.Request.Query["isbn"])"
+               asp-route-sortOrder="isbn_desc">↓</a>
+        </th>
+        <th>Sinopse</th>
+        <th>Capa</th>
+        <th>Utilizador</th>
+        <th>Ativo</th>
+        <th>Ações</th>
+    </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
@@ -66,10 +103,13 @@
                 @Html.DisplayFor(modelItem => item.ISBN)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Sinopse)
+                @(item.Sinopse?.Length > 50 ? item.Sinopse.Substring(0, 50) + "..." : item.Sinopse)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Capa)
+                @if (!string.IsNullOrEmpty(item.Capa))
+                {
+                    <img src="@item.Capa" style="max-width: 80px; max-height: 80px;" alt="Capa do Livro" />
+                }
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.User.Id)

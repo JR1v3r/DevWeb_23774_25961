@@ -6,7 +6,7 @@
 
 <h1>Trocas</h1>
 
-<div class="d-flex flex-column min-vh-20">
+<section class="d-flex flex-column min-vh-20">
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm py-2">
             <div class="container-fluid flex-column">
@@ -24,58 +24,53 @@
             </div>
         </nav>
     </header>
-</div>
+</section>
+
 <table class="table">
     <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.LivroDado)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.LivroRecebido)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Vendedor)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Comprador)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Estado)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Timestamp)
-            </th>
-            <th></th>
-        </tr>
+    <tr>
+        <th>
+            <a asp-action="Index" asp-route-sortOrder="LivroDado_asc">Livro Dado ↑</a> |
+            <a asp-action="Index" asp-route-sortOrder="LivroDado_desc">↓</a>
+        </th>
+        <th>
+            <a asp-action="Index" asp-route-sortOrder="LivroRecebido_asc">Livro Recebido ↑</a> |
+            <a asp-action="Index" asp-route-sortOrder="LivroRecebido_desc">↓</a>
+        </th>
+        <th>
+            <a asp-action="Index" asp-route-sortOrder="Vendedor_asc">Vendedor ↑</a> |
+            <a asp-action="Index" asp-route-sortOrder="Vendedor_desc">↓</a>
+        </th>
+        <th>
+            <a asp-action="Index" asp-route-sortOrder="Comprador_asc">Comprador ↑</a> |
+            <a asp-action="Index" asp-route-sortOrder="Comprador_desc">↓</a>
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Estado)
+        </th>
+        <th>
+            <a asp-action="Index" asp-route-sortOrder="Data_asc">Data ↑</a> |
+            <a asp-action="Index" asp-route-sortOrder="Data_desc">↓</a>
+        </th>
+        <th></th>
+    </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+    @foreach (var item in Model)
+    {
         <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.LivroDado.Autor)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LivroRecebido.Autor)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Vendedor.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Comprador.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Estado)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Timestamp)
-            </td>
+            <td>@item.LivroDado?.Titulo</td>
+            <td>@item.LivroRecebido?.Titulo</td>
+            <td>@item.Vendedor?.UserName</td>
+            <td>@item.Comprador?.UserName</td>
+            <td>@item.Estado</td>
+            <td>@item.Timestamp.ToString()</td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
                 <a asp-action="Details" asp-route-id="@item.Id">Detalhes</a> |
                 <a asp-action="Delete" asp-route-id="@item.Id">Apagar</a>
             </td>
         </tr>
-}
+    }
     </tbody>
 </table>

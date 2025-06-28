@@ -15,13 +15,35 @@ namespace DevWeb_23774_25961.Controllers
     public class TrocasController(ApplicationDbContext context, UserManager<IdentityUser> userManager, EmailSender emailSender, IHubContext<TradeHub> hubContext)
         : Controller
     {
-        // GET: Trocas
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder)
         {
-            var applicationDbContext = context.Trocas.Include(t => t.Comprador).Include(t => t.LivroDado).Include(t => t.LivroRecebido).Include(t => t.Vendedor);
-            return View(await applicationDbContext.ToListAsync());
+            var query = context.Trocas
+                .Include(t => t.Vendedor).AsQueryable()
+                .Include(t => t.Comprador).AsQueryable()
+                .Include(t => t.LivroDado).AsQueryable()
+                .Include(t => t.LivroRecebido).AsQueryable();
+            
+            // Sorting
+            query = sortOrder switch
+            {
+                "LivroDado_asc" => query.OrderBy(t => t.LivroDado.Titulo),
+                "LivroDado_desc" => query.OrderByDescending(t => t.LivroDado.Titulo),
+                "LivroRecebido_asc" => query.OrderBy(t => t.LivroRecebido.Titulo),
+                "LivroRecebido_desc" => query.OrderByDescending(t => t.LivroRecebido.Titulo),
+                "Vendedor_asc" => query.OrderBy(t => t.Vendedor.UserName),
+                "Vendedor_desc" => query.OrderByDescending(t => t.Vendedor.UserName),
+                "Comprador_asc" => query.OrderBy(t => t.Comprador.UserName),
+                "Comprador_desc" => query.OrderByDescending(t => t.Comprador.UserName),
+                "Data_asc" => query.OrderBy(t => t.Timestamp),
+                "Data_desc" => query.OrderByDescending(t => t.Timestamp),
+                _ => query.OrderBy(t => t.Id)
+            };
+
+            var livros = await query.ToListAsync();
+            return View(livros);
         }
+
         
         
         // GET: Livros/MyTrades

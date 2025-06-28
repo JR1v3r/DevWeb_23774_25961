@@ -12,10 +12,32 @@ namespace DevWeb_23774_25961.Controllers
     {
         // GET: Livros
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string titulo, string autor, string isbn, string sortOrder)
         {
-            var applicationDbContext = context.Livros.Include(l => l.User);
-            return View(await applicationDbContext.ToListAsync());
+            var query = context.Livros.Include(l => l.User).AsQueryable();
+
+            // Filtering
+            if (!string.IsNullOrEmpty(titulo))
+                query = query.Where(l => l.Titulo.Contains(titulo));
+            if (!string.IsNullOrEmpty(autor))
+                query = query.Where(l => l.Autor.Contains(autor));
+            if (!string.IsNullOrEmpty(isbn))
+                query = query.Where(l => l.ISBN.Contains(isbn));
+
+            // Sorting
+            query = sortOrder switch
+            {
+                "titulo_asc" => query.OrderBy(l => l.Titulo),
+                "titulo_desc" => query.OrderByDescending(l => l.Titulo),
+                "autor_asc" => query.OrderBy(l => l.Autor),
+                "autor_desc" => query.OrderByDescending(l => l.Autor),
+                "isbn_asc" => query.OrderBy(l => l.ISBN),
+                "isbn_desc" => query.OrderByDescending(l => l.ISBN),
+                _ => query.OrderBy(l => l.Id)
+            };
+
+            var livros = await query.ToListAsync();
+            return View(livros);
         }
         
         // GET: MyBooks
