@@ -167,7 +167,7 @@ namespace DevWeb_23774_25961.Controllers
                 return RedirectToPage("/Account/Login", new { area = "Identity" });
             }
             
-            if (livros.UserId != user.Id)
+            if (livros.UserId != user.Id && !User.IsInRole("Admin"))
             {
                 return Forbid();
             }
@@ -192,7 +192,7 @@ namespace DevWeb_23774_25961.Controllers
             var user = await userManager.GetUserAsync(User);
             if (user == null) return RedirectToPage("/Account/Login", new { area = "Identity" });
 
-            if (livros.UserId != user.Id)
+            if (livros.UserId != user.Id && !User.IsInRole("Admin"))
             {
                 return Forbid();
             }
@@ -275,7 +275,7 @@ namespace DevWeb_23774_25961.Controllers
                 return NotFound();
             }
             
-            if (livros.UserId != user.Id)
+            if (livros.UserId != user.Id && !User.IsInRole("Admin"))
             {
                 return Forbid();
             }
@@ -302,7 +302,7 @@ namespace DevWeb_23774_25961.Controllers
                 return NotFound();
             }
 
-            if (livro.UserId != user.Id)
+            if (livro.UserId != user.Id && !User.IsInRole("Admin"))
             {
                 return Forbid();
             }

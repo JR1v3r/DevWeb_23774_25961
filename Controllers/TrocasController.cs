@@ -94,7 +94,7 @@ namespace DevWeb_23774_25961.Controllers
             {
                 return NotFound();
             }
-            
+
             if (trocas.IdVendedor != user.Id 
                 || trocas.IdComprador == user.Id)
             {
@@ -178,7 +178,7 @@ namespace DevWeb_23774_25961.Controllers
         }
 
 
-
+/*
         // GET: Trocas/Edit/5
         [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> Edit(int? id)
@@ -193,6 +193,11 @@ namespace DevWeb_23774_25961.Controllers
             {
                 return NotFound();
             }
+            if (trocas.Vendedor.Id != user. && !User.IsInRole("Admin"))
+            {
+                return Forbid();
+            }
+            
             ViewData["IdComprador"] = new SelectList(context.Users, "Id", "Id", trocas.IdComprador);
             ViewData["IdLivroDado"] = new SelectList(context.Livros, "Id", "Autor", trocas.IdLivroDado);
             ViewData["IdLivroRecebido"] = new SelectList(context.Livros, "Id", "Autor", trocas.IdLivroRecebido);
@@ -234,7 +239,7 @@ namespace DevWeb_23774_25961.Controllers
             ViewData["IdLivroRecebido"] = new SelectList(context.Livros, "Id", "Autor", trocas.IdLivroRecebido);
             ViewData["IdVendedor"] = new SelectList(context.Users, "Id", "Id", trocas.IdVendedor);
             return View(trocas);
-        }
+        }*/
 
         // GET: Trocas/TradeProposal/5
         [Authorize(Roles = "Admin,User")]
@@ -400,8 +405,9 @@ namespace DevWeb_23774_25961.Controllers
             {
                 return NotFound();
             }
-
-            if (trocas.IdVendedor != user.Id){
+            
+            if (trocas.IdVendedor != user.Id && !User.IsInRole("Admin"))
+            {
                 return Forbid();
             }
             
@@ -426,7 +432,7 @@ namespace DevWeb_23774_25961.Controllers
             bool isComprador = troca.IdComprador == user.Id;
 
             // 🍌 If you're the one who created the trade, you can delete it completely
-            if (isVendedor)
+            if (isVendedor || User.IsInRole("Admin"))
             {
                 context.Trocas.Remove(troca);
             }
