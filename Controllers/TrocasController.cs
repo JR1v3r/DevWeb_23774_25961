@@ -7,11 +7,12 @@ using DevWeb_23774_25961.Models;
 using DevWeb_23774_25961.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 
 
 namespace DevWeb_23774_25961.Controllers
 {
-    public class TrocasController(ApplicationDbContext context, UserManager<IdentityUser> userManager, EmailSender emailSender)
+    public class TrocasController(ApplicationDbContext context, UserManager<IdentityUser> userManager, EmailSender emailSender, IHubContext<TradeHub> hubContext)
         : Controller
     {
         // GET: Trocas
@@ -328,6 +329,11 @@ namespace DevWeb_23774_25961.Controllers
 
                 await emailSender.SendEmailAsync(user.Email, subjectProposer, bodyProposer);
 
+                await hubContext.Clients.User(troca.IdVendedor).SendAsync(
+                    "ReceiveNotification",
+                    $"Alguém propôs um livro na sua troca #{troca.Id}!"
+                );
+                
                 return RedirectToAction(nameof(MyTrades));
             }
 
@@ -493,6 +499,12 @@ namespace DevWeb_23774_25961.Controllers
                             ";
 
                 await emailSender.SendEmailAsync(vendedor.Email, subjectVendedor, bodyVendedor);
+                
+                await hubContext.Clients.User(troca.IdComprador).SendAsync(
+                    "ReceiveNotification",
+                    $"A sua proposta na troca #{troca.Id} foi aceite!"
+                );
+
             }
 
             return RedirectToAction("MyTrades");
@@ -559,6 +571,12 @@ namespace DevWeb_23774_25961.Controllers
 
             await emailSender.SendEmailAsync(user.Email, subjectVendedor, bodyVendedor);
 
+            await hubContext.Clients.User(troca.IdComprador).SendAsync(
+                "ReceiveNotification",
+                $"A sua proposta na troca #{troca.Id} foi recusada."
+            );
+
+            
             return RedirectToAction("MyTrades");
         }
 
