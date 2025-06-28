@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -32,44 +34,42 @@ public class LivrosApiController : ControllerBase
         _configuration = configuration;
     }
 
-    // PUBLIC: No auth needed
     [HttpGet]
     [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<Livros>>> GetAllLivros()
     {
-        var livros = await _context.Livros.ToListAsync();
-        return Ok(livros);
+        return await _context.Livros.ToListAsync();
     }
 
-    // PUBLIC: No auth needed
     [HttpGet("{id}")]
     [AllowAnonymous]
     public async Task<ActionResult<Livros>> GetLivro(int id)
     {
         var livro = await _context.Livros.FindAsync(id);
-        if (livro == null) return NotFound();
-
-        return Ok(livro);
+        return livro == null ? NotFound() : Ok(livro);
     }
 
-    // PROTECTED endpoints, only logged-in users:
     [HttpGet("user")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "JwtBearer")]
     public async Task<ActionResult<IEnumerable<Livros>>> GetMyLivros()
     {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized();
+        // CORRECT: Get the ID (GUID) from NameIdentifier claim
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        var user = await _userManager.FindByNameAsync(userId);
+        if (user == null) return Unauthorized("User not found");
 
-        var meusLivros = await _context.Livros.Where(l => l.UserId == user.Id).ToListAsync();
-        return Ok(meusLivros);
+        return await _context.Livros.Where(l => l.UserId == user.Id).ToListAsync();
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "JwtBearer")]
     public async Task<ActionResult<Livros>> CreateLivro([FromBody] Livros livro)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
         var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized();
+        if (user == null) return Unauthorized("Invalid credentials");
 
         livro.UserId = user.Id;
         livro.IsActive = true;
@@ -81,13 +81,14 @@ public class LivrosApiController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "JwtBearer")]
     public async Task<IActionResult> EditLivro(int id, [FromBody] Livros livro)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
         if (id != livro.Id) return BadRequest();
 
         var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized();
+        if (user == null) return Unauthorized("Invalid credentials");
 
         var livroExist = await _context.Livros.AsNoTracking().FirstOrDefaultAsync(l => l.Id == id);
         if (livroExist == null) return NotFound();
@@ -103,18 +104,18 @@ public class LivrosApiController : ControllerBase
         catch (DbUpdateConcurrencyException)
         {
             if (!LivrosExists(id)) return NotFound();
-            else throw;
+            throw;
         }
 
         return NoContent();
     }
 
     [HttpDelete("{id}")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "JwtBearer")]
     public async Task<IActionResult> DeleteLivro(int id)
     {
         var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized();
+        if (user == null) return Unauthorized("Invalid credentials");
 
         var livro = await _context.Livros.FindAsync(id);
         if (livro == null) return NotFound();
@@ -126,56 +127,60 @@ public class LivrosApiController : ControllerBase
         return NoContent();
     }
 
-    private bool LivrosExists(int id)
-    {
-        return _context.Livros.Any(e => e.Id == id);
-    }
-
-    // NEW! Login endpoint that returns JWT token
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var user = await _userManager.FindByNameAsync(model.Username);
         if (user == null)
-            return Unauthorized("Invalid username or password.");
+            return Unauthorized("Invalid credentials");
 
         var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
         if (!result.Succeeded)
-            return Unauthorized("Invalid username or password.");
+            return Unauthorized("Invalid credentials");
 
         var token = GenerateJwtToken(user);
-        return Ok(new { token });
+        return Ok(new { 
+            token,
+            expiresIn = DateTime.UtcNow.AddMinutes(15) // Shorter expiry
+        });
     }
 
     private string GenerateJwtToken(IdentityUser user)
     {
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.NameIdentifier, user.Id)
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.Email, user.Email ?? string.Empty)
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var expires = DateTime.Now.AddDays(7);
-
+        
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: expires,
+            expires: DateTime.UtcNow.AddMinutes(15), // 15-minute expiry
             signingCredentials: creds
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    private bool LivrosExists(int id) => _context.Livros.Any(e => e.Id == id);
 }
 
 public class LoginModel
 {
-    public string Username { get; set; }
-    public string Password { get; set; }
+    [Required(ErrorMessage = "Username is required")]
+    public string Username { get; set; } = null!;
+
+    [Required(ErrorMessage = "Password is required")]
+    public string Password { get; set; } = null!;
 }
