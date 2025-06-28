@@ -1,9 +1,13 @@
 using System.Net;
 using System.Net.Mail;
+using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DevWeb_23774_25961.Data;
 using DevWeb_23774_25961.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,12 +22,34 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddRoles<IdentityRole>() // Add user role support
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
+
+
+
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<EmailSender>(); // Add email sender service
 
 builder.Services.AddSignalR();
 builder.Services.AddRazorPages();
+builder.Services.AddControllers();
 builder.Services.AddControllersWithViews();
+
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -60,6 +86,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHub<TradeHub>("/tradeHub");
+app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
@@ -82,29 +109,4 @@ async Task CreateRoles(IServiceProvider serviceProvider)
             await roleManager.CreateAsync(new IdentityRole(roleName));
         }
     }
-}
-
-async Task SendSapoEmailAsync(string emailDestino, string thesubject, string thebody)
-{
-    var fromAddress = new MailAddress("devweblivros@sapo.pt");
-    var toAddress = new MailAddress(emailDestino);
-
-    var smtp = new SmtpClient
-    {
-        Host = "smtp.sapo.pt",
-        Port = 587, // ou 465
-        EnableSsl = true,
-        DeliveryMethod = SmtpDeliveryMethod.Network,
-        UseDefaultCredentials = false,
-        Credentials = new NetworkCredential("devweblivros@sapo.pt", "JmF.2025")
-    };
-
-    using var message = new MailMessage(fromAddress, toAddress)
-    {
-        Subject = thesubject,
-        Body = thebody,
-        IsBodyHtml = false
-    };
-
-    await smtp.SendMailAsync(message);
 }
