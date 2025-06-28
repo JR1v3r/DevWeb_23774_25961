@@ -4,12 +4,14 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DevWeb_23774_25961.Data;
 using DevWeb_23774_25961.Models;
+using DevWeb_23774_25961.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
+
 namespace DevWeb_23774_25961.Controllers
 {
-    public class TrocasController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+    public class TrocasController(ApplicationDbContext context, UserManager<IdentityUser> userManager, EmailSender emailSender)
         : Controller
     {
         // GET: Trocas
@@ -104,24 +106,54 @@ namespace DevWeb_23774_25961.Controllers
                 return RedirectToPage("/Account/Login", new { area = "Identity" });
             }
 
+            // Get book details for the email
+            var livro = await context.Livros.FindAsync(trocas.IdLivroDado);
+            if (livro == null)
+            {
+                ModelState.AddModelError("", "O livro selecionado não existe.");
+                ViewData["IdLivroDado"] = new SelectList(context.Livros, "Id", "Titulo", trocas.IdLivroDado);
+                return View(trocas);
+            }
+
             // Set remaining properties
             trocas.IdVendedor = user.Id;
             trocas.Estado = Trocas.EstadoTroca.Criada;
             trocas.Timestamp = DateTime.Now;
 
-            // Optional fields will stay null: IdComprador & IdLivroRecebido
-
             if (ModelState.IsValid)
             {
                 context.Add(trocas);
                 await context.SaveChangesAsync();
+
+                // Prepare and send email
+                var subject = $@"Confirmação de Troca #{trocas.Id} - Book'n'Swap";
+                var body = $@"
+                    Olá {user.UserName}!
+
+                    A tua troca foi criada com sucesso. Aqui estão os detalhes:
+
+                    ID da troca: #{trocas.Id}
+                    Livro: {livro.Titulo}
+                    Autor: {livro.Autor}
+                    ISBN: {livro.ISBN}
+                    Sinopse: {livro.Sinopse}
+                    Data da Troca: {trocas.Timestamp.ToString()}
+
+                    Iremos notificá-lo quando outro utilizador estiver interessado.
+
+                    Obrigado por usar a Book'n'Swap! ✨
+                ";
+
+                await emailSender.SendEmailAsync(user.Email, subject, body);
+
                 return RedirectToAction("MyBooks", "Livros");
             }
 
-            // Just in case validation fails... load ViewData again~
+            // Validation failed
             ViewData["IdLivroDado"] = new SelectList(context.Livros, "Id", "Titulo", trocas.IdLivroDado);
-            return RedirectToAction("MyBooks", "Livros");
+            return View(trocas);
         }
+
 
 
         // GET: Trocas/Edit/5
@@ -220,9 +252,7 @@ namespace DevWeb_23774_25961.Controllers
             return View(troca);
         }
 
-
-
-
+        
         // POST: Trocas/TradeProposal/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -243,6 +273,15 @@ namespace DevWeb_23774_25961.Controllers
                 return NotFound();
             }
 
+            var livroProposto = await context.Livros.FindAsync(updatedTrade.IdLivroRecebido);
+            var livroOriginal = await context.Livros.FindAsync(troca.IdLivroDado);
+            var donoTroca = await userManager.FindByIdAsync(troca.IdVendedor);
+
+            if (livroProposto == null || livroOriginal == null || donoTroca == null)
+            {
+                return NotFound("Dados inválidos para a troca.");
+            }
+
             // Update the existing trade with the proposal
             troca.IdLivroRecebido = updatedTrade.IdLivroRecebido;
             troca.IdComprador = user.Id;
@@ -253,6 +292,42 @@ namespace DevWeb_23774_25961.Controllers
             {
                 context.Update(troca);
                 await context.SaveChangesAsync();
+
+                // ✨ Email to Trade Owner ✨
+                var subjectDono = "Nova Proposta de Troca no Book'n'Swap!";
+                var bodyDono = $@"
+                    Olá {donoTroca.UserName},
+
+                    Alguém fez uma proposta para a tua troca #{troca.Id}!
+
+                    📖 Livro que ofereceste: {livroOriginal.Titulo}
+                    📚 Livro proposto: {livroProposto.Titulo}
+                    ✍️ Proponente: {user.UserName}
+
+                    Podes ver os detalhes no site.
+
+                    Obrigado por usar o Book'n'Swap!
+                            ";
+
+                await emailSender.SendEmailAsync(donoTroca.Email, subjectDono, bodyDono);
+
+                // ✨ Email to Proposer ✨
+                var subjectProposer = "Proposta de Troca Submetida!";
+                var bodyProposer = $@"
+                    Olá {user.UserName},
+
+                    A tua proposta para a troca #{troca.Id} foi registada com sucesso.
+
+                    📖 Livro original: {livroOriginal.Titulo}
+                    📚 Livro que propuseste: {livroProposto.Titulo}
+
+                    O dono da troca será notificado e, se aceitar, iremos informar-te!
+
+                    Obrigado por usar o Book'n'Swap!
+                            ";
+
+                await emailSender.SendEmailAsync(user.Email, subjectProposer, bodyProposer);
+
                 return RedirectToAction(nameof(MyTrades));
             }
 
@@ -270,6 +345,7 @@ namespace DevWeb_23774_25961.Controllers
             ViewBag.LivrosDisponiveis = new SelectList(meusLivrosDisponiveis, "Id", "Titulo", updatedTrade.IdLivroRecebido);
             return View(troca);
         }
+
 
         
         // GET: Trocas/Delete/5
@@ -363,18 +439,18 @@ namespace DevWeb_23774_25961.Controllers
             if (troca.Estado != Trocas.EstadoTroca.Pendente)
                 return BadRequest();
 
-            // 👯 Swap ownerships!
             var livroDado = troca.LivroDado;
             var livroRecebido = troca.LivroRecebido;
 
             if (livroDado != null && livroRecebido != null)
             {
-                var compradorId = troca.IdComprador;
+                var comprador = await userManager.FindByIdAsync(troca.IdComprador);
+                var vendedor = user;
 
-                // swap ownership
+                // Swap ownership
                 var tempOwner = livroDado.UserId;
-                livroDado.UserId = compradorId;
-                livroRecebido.UserId = user.Id;
+                livroDado.UserId = comprador.Id;
+                livroRecebido.UserId = vendedor.Id;
 
                 troca.Estado = Trocas.EstadoTroca.Aceite;
 
@@ -383,10 +459,45 @@ namespace DevWeb_23774_25961.Controllers
                 context.Update(troca);
 
                 await context.SaveChangesAsync();
+
+                // ✨ Email to Buyer ✨
+                var subjectComprador = "A sua proposta foi aceite!";
+                var bodyComprador = $@"
+                    Olá {comprador.UserName},
+
+                    Boas notícias! A sua proposta na troca #{troca.Id} foi aceite.
+
+                    Livro que recebes: {livroDado.Titulo}
+                    Livro que entrega: {livroRecebido.Titulo}
+
+                    Já pode ver o seu novo livro na sua coleção.
+
+                    Obrigado por usar o Book'n'Swap!
+                            ";
+
+                await emailSender.SendEmailAsync(comprador.Email, subjectComprador, bodyComprador);
+
+                // ✨ Email to Seller ✨
+                var subjectVendedor = "Troca concluida com sucesso!";
+                var bodyVendedor = $@"
+                    Olá {vendedor.UserName},
+
+                    Confirmamos que a proposta à sua troca #{troca.Id} foi aceite.
+
+                    Livro que entrega: {livroDado.Titulo}
+                    Livro que recebe: {livroRecebido.Titulo}
+
+                    Já pode ver o seu novo livro na sua coleção.
+
+                    Obrigado por usar o Book'n'Swap!
+                            ";
+
+                await emailSender.SendEmailAsync(vendedor.Email, subjectVendedor, bodyVendedor);
             }
 
             return RedirectToAction("MyTrades");
         }
+
 
         
         // POST: Trocas/Recusar/5
@@ -395,9 +506,12 @@ namespace DevWeb_23774_25961.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Recusar(int id)
         {
-            var troca = await context.Trocas.FindAsync(id);
-            var user = await userManager.GetUserAsync(User);
+            var troca = await context.Trocas
+                .Include(t => t.LivroDado)
+                .Include(t => t.LivroRecebido)
+                .FirstOrDefaultAsync(t => t.Id == id);
 
+            var user = await userManager.GetUserAsync(User);
             if (troca == null || troca.IdVendedor != user.Id)
                 return Forbid();
 
@@ -409,8 +523,46 @@ namespace DevWeb_23774_25961.Controllers
             context.Update(troca);
             await context.SaveChangesAsync();
 
+            // ✨ Email to Buyer (Proposer)
+            if (troca.IdComprador != null)
+            {
+                var comprador = await userManager.FindByIdAsync(troca.IdComprador);
+
+                var subjectComprador = "A sua proposta foi recusada";
+                var bodyComprador = $@"
+                    Olá {comprador.UserName},
+
+                    Infelizmente, a sua proposta para a troca #{troca.Id} foi recusada.
+
+                    Livro que propôs: {troca.LivroRecebido?.Titulo ?? "(livro desconhecido)"}
+                    Livro do utilizador: {troca.LivroDado?.Titulo ?? "(livro desconhecido)"}
+
+                    Continue a explorar novas oportunidades na Book'n'Swap ✨
+                    Obrigado por usar o nosso serviço!
+                            ";
+
+                await emailSender.SendEmailAsync(comprador.Email, subjectComprador, bodyComprador);
+            }
+
+            // ✨ Email to Owner (Rejecting User)
+            var subjectVendedor = "Recusou uma proposta de troca";
+            var bodyVendedor = $@"
+                Olá {user.UserName},
+
+                Confirmamos que a proposta para a troca #{troca.Id} foi por si recusada.
+
+                O seu livro: {troca.LivroDado?.Titulo ?? "(livro desconhecido)"}
+                Livro proposto: {troca.LivroRecebido?.Titulo ?? "(livro desconhecido)"}
+
+                Obrigado por continuar a usar o Book'n'Swap!
+                    ";
+
+            await emailSender.SendEmailAsync(user.Email, subjectVendedor, bodyVendedor);
+
             return RedirectToAction("MyTrades");
         }
+
+
         
         
         private bool TrocasExists(int id)

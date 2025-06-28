@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+@inject SignInManager<IdentityUser> SignInManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -51,9 +55,12 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark" href="/Identity/Account/Manage">Gerir Conta</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Livros" asp-action="Index">Administração</a>
-                    </li>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Livros" asp-action="Index">Administração</a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
